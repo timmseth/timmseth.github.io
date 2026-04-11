@@ -32,12 +32,17 @@
   --terminal-amber: #ffaa00;
   --terminal-glow: 0 0 5px rgba(51, 255, 51, 0.4);
   --book-width: min(800px, 92vw);
-  --book-height: min(560px, 80vh);
+  --book-height: min(560px, calc(100vh - 70px));
 }
 
 html {
-  zoom: 1.75;
+  zoom: 1;
 }
+/* Zoom only scales up on large viewports */
+@media (min-width: 1400px) { html { zoom: 1.75; } }
+@media (min-width: 1100px) and (max-width: 1399px) { html { zoom: 1.4; } }
+@media (min-width: 900px) and (max-width: 1099px) { html { zoom: 1.2; } }
+/* 601-899 and ≤600 both stay at zoom: 1 */
 html, body {
   width: 100%; height: 100%;
   overflow: hidden;
@@ -233,9 +238,18 @@ html, body {
 #cover-terminal {
   display: flex; flex-direction: column;
   height: 100%; position: relative;
-  zoom: calc(1 / 1.55);
-  padding-top: 44px;
-  padding-bottom: 44px;
+  zoom: 1;
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+@media (min-width: 1400px) {
+  #cover-terminal { zoom: calc(1 / 1.55); padding-top: 44px; padding-bottom: 44px; }
+}
+@media (min-width: 1100px) and (max-width: 1399px) {
+  #cover-terminal { zoom: calc(1 / 1.25); padding-top: 36px; padding-bottom: 36px; }
+}
+@media (min-width: 900px) and (max-width: 1099px) {
+  #cover-terminal { zoom: calc(1 / 1.1); padding-top: 32px; padding-bottom: 32px; }
 }
 
 .cover-header {
@@ -753,7 +767,7 @@ html, body {
 
   :root {
     --book-width: 96vw;
-    --book-height: 88vh;
+    --book-height: calc(100vh - 40px);
   }
 
   /* Cover / terminal fills mobile screen */
@@ -819,6 +833,63 @@ html, body {
 
   /* Footer */
   #site-footer { font-size: 0.45rem; padding: 2px 0; }
+}
+
+/* ==============================
+   11b. INTERMEDIATE RESPONSIVE (tablets / small windows / resized desktop)
+   ============================== */
+
+/* Fix BG buttons overlapping DON'T PANIC at all sizes */
+#bg-toggle-mobile, #bg-info-btn {
+  top: 4px;
+}
+
+/* Prevent horizontal overflow on book pages at all sizes */
+.page { word-wrap: break-word; overflow-wrap: break-word; }
+.page-header { word-wrap: break-word; overflow-wrap: break-word; }
+.entry-subtitle { word-wrap: break-word; overflow-wrap: break-word; }
+
+/* Nav bar: always above footer */
+#nav-bar { bottom: 20px; }
+
+/* 900-1099: gentle scale-down */
+@media (min-width: 900px) and (max-width: 1099px) {
+  :root {
+    --book-width: min(760px, 94vw);
+    --book-height: min(540px, calc(100vh - 60px));
+  }
+  .side-arrow { padding: 14px 8px; font-size: 1.2rem; }
+  #arrow-left { left: max(4px, calc(50% - var(--book-width) / 2 - 42px)); }
+  #arrow-right { right: max(4px, calc(50% - var(--book-width) / 2 - 42px)); }
+}
+
+/* 601-899: compact layout, no zoom */
+@media (min-width: 601px) and (max-width: 899px) {
+  :root {
+    --book-width: min(700px, 96vw);
+    --book-height: min(500px, calc(100vh - 50px));
+  }
+
+  .cover-header { padding: 10px 16px 6px 16px; }
+  .cover-title { font-size: clamp(0.9rem, 2.2vw, 1.2rem); }
+
+  .page { padding: 30px 22px 30px 26px; font-size: 0.88rem; }
+  .entry-title { font-size: clamp(1.1rem, 3vw, 1.6rem); }
+
+  .gui-btn { font-size: 0.78rem; padding: 5px 10px; }
+  .gui-section-label { font-size: 0.7rem; }
+
+  .side-arrow { padding: 12px 6px; font-size: 1.1rem; }
+  #arrow-left { left: 4px; }
+  #arrow-right { right: 4px; }
+
+  #nav-bar { bottom: 18px; gap: 8px; }
+  #btn-home { font-size: 0.65rem; padding: 3px 8px; }
+  .page-dot { width: 7px; height: 7px; }
+  #page-label { font-size: 0.55rem; }
+
+  .avatar-container { width: 130px; }
+  .skill-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -1138,7 +1209,7 @@ html, body {
 
 <!-- Bottom bar: dots + home -->
 <div id="nav-bar">
-  <button id="btn-home">&#9776; Cover</button>
+  <button id="btn-home">&#9776; Terminal</button>
   <div class="page-dots" id="page-dots"></div>
   <div id="page-label"></div>
 </div>
@@ -1185,10 +1256,14 @@ html, body {
   let starCatalog = [];
   let starsReady = false;
 
-  // Mouse tracking for hover labels
+  // Mouse tracking for hover labels (document-level so it works through overlapping elements)
   let mouseX = -9999, mouseY = -9999;
-  canvas.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-  canvas.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
+  document.addEventListener('mousemove', e => {
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    mouseX = e.clientX / z;
+    mouseY = e.clientY / z;
+  });
+  document.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
 
   // Random twinkle-blink system: periodically pick random labeled stars to flash bright
   let blinkingStars = new Set();
@@ -1283,6 +1358,43 @@ html, body {
   const INFECTION_SPEED = 120;  // pixels per second spread rate
   const INFECTION_MAX_DIST = 600;
 
+  // Hover-pause detection: trigger infection after mouse stays near a star
+  let hoverCandidate = null;    // star the mouse is near
+  let hoverCandidateStart = 0;  // when mouse first got near it
+  let hoverCandidatePos = null; // screen pos of candidate
+  const HOVER_DWELL_MS = 400;  // ms of hover to trigger
+
+  // Touch-and-hold for mobile
+  let touchHoldTimer = null;
+  let touchPos = { x: -9999, y: -9999 };
+  // Document-level touch handlers (canvas is behind overlays)
+  document.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    touchPos.x = t.clientX / z;
+    touchPos.y = t.clientY / z;
+    mouseX = touchPos.x;
+    mouseY = touchPos.y;
+    clearTimeout(touchHoldTimer);
+    touchHoldTimer = setTimeout(() => {
+      if (hoverCandidate) {
+        hoverCandidateStart = performance.now() - HOVER_DWELL_MS - 1;
+      }
+    }, 600);
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    mouseX = t.clientX / z;
+    mouseY = t.clientY / z;
+    clearTimeout(touchHoldTimer);
+  }, { passive: true });
+  document.addEventListener('touchend', () => {
+    clearTimeout(touchHoldTimer);
+    mouseX = -9999; mouseY = -9999;
+    hoverCandidate = null;
+  }, { passive: true });
+
   function renderStarMap(time) {
     const t = time / 1000;
 
@@ -1335,24 +1447,50 @@ html, body {
       starPositions.push({ star, pos });
     }
 
-    // Detect hover on important stars (mag < 1.5, within 20px)
-    let newHovered = null;
+    // Detect hover on important stars (mag < 1.5, within 25px)
+    let nearestImportant = null;
+    let nearestPos = null;
     for (const { star, pos } of starPositions) {
       if (star.mag >= 1.5 || !star.label) continue;
       const dx = pos[0] - mouseX, dy = pos[1] - mouseY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 20) { newHovered = star; infectionSource = pos; break; }
+      if (dist < 25) { nearestImportant = star; nearestPos = pos; break; }
     }
 
-    // Start/clear infection on hover change
-    if (newHovered && newHovered !== hoveredStar) {
-      rainbowInfection = {};
-      rainbowInfection[newHovered.id] = { startTime: now, generation: 0 };
-    } else if (!newHovered && hoveredStar) {
-      // Fade out: keep infection but mark as fading
-      rainbowInfection._fadeStart = now;
+    // Dwell-time hover: mouse must stay near star for HOVER_DWELL_MS
+    if (nearestImportant) {
+      if (hoverCandidate !== nearestImportant) {
+        // New candidate — start dwell timer
+        hoverCandidate = nearestImportant;
+        hoverCandidateStart = now;
+        hoverCandidatePos = nearestPos;
+      }
+      // Check if dwell time met
+      if (!hoveredStar && now - hoverCandidateStart >= HOVER_DWELL_MS) {
+        // Trigger infection
+        hoveredStar = hoverCandidate;
+        infectionSource = hoverCandidatePos;
+        rainbowInfection = {};
+        rainbowInfection[hoveredStar.id] = { startTime: now, generation: 0 };
+      } else if (hoveredStar && hoveredStar === nearestImportant) {
+        // Already active, update source pos (star moves with rotation)
+        infectionSource = nearestPos;
+      } else if (hoveredStar && hoveredStar !== nearestImportant) {
+        // Switched to a different star — fade out old, start new dwell
+        rainbowInfection._fadeStart = now;
+        hoveredStar = null;
+        hoverCandidate = nearestImportant;
+        hoverCandidateStart = now;
+        hoverCandidatePos = nearestPos;
+      }
+    } else {
+      hoverCandidate = null;
+      if (hoveredStar) {
+        // Mouse left — fade out
+        rainbowInfection._fadeStart = now;
+        hoveredStar = null;
+      }
     }
-    hoveredStar = newHovered;
 
     // Spread infection to nearby stars
     if (hoveredStar && infectionSource) {

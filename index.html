@@ -1165,8 +1165,8 @@ html, body {
         if (blinkingStars.has(id)) continue;
         blinkingStars.add(id);
         star.blinkStart = performance.now();
-        // Remove blink after 0.6-1.4 seconds
-        const dur = 600 + Math.random() * 800;
+        // Remove blink after 1.8-4.2 seconds (3x slower)
+        const dur = 1800 + Math.random() * 2400;
         setTimeout(() => { blinkingStars.delete(id); }, dur);
       }
     }, 1200 + Math.random() * 2000);
@@ -1293,7 +1293,7 @@ html, body {
       let blinkBoost = 0;
       if (isBlinking && star.blinkStart) {
         const elapsed = now - star.blinkStart;
-        const dur = 1000;
+        const dur = 3000;
         // Bell curve: ramp up then down
         const progress = Math.min(elapsed / dur, 1);
         blinkBoost = Math.sin(progress * Math.PI); // 0→1→0

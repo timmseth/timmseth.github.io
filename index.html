@@ -66,7 +66,7 @@ html, body {
 }
 
 #bg-toggle-mobile {
-  display: none;
+  display: block;
   position: fixed;
   top: 8px; left: 8px;
   z-index: 500;
@@ -78,6 +78,11 @@ html, body {
   font-size: 0.55rem;
   padding: 4px 8px;
   cursor: pointer;
+}
+#bg-toggle-mobile:hover {
+  color: #f0e030;
+  border-color: #f0e030;
+  background: rgba(10, 10, 10, 0.85);
 }
 #bg-toggle-mobile:active {
   color: #f0e030;
@@ -771,9 +776,6 @@ html, body {
   #arrow-left { left: 2px; }
   #arrow-right { right: 2px; }
   .side-arrow { padding: 12px 5px; font-size: 1rem; border-radius: 4px; }
-
-  /* Mobile BG toggle button */
-  #bg-toggle-mobile { display: block; }
 
   /* Footer */
   #site-footer { font-size: 0.45rem; padding: 2px 0; }
@@ -1673,7 +1675,7 @@ html, body {
     maxShadowOpacity: 0.5,
     showCover: true,
     flippingTime: 1200,
-    useMouseEvents: isMobile,
+    useMouseEvents: false,
     usePortrait: true,
     mobileScrollSupport: true,
     swipeDistance: 40,

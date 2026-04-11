@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hitchhiker's Guide to Seth Timmons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<style>
+/* ==============================
+   1. RESET & VARIABLES
+   ============================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --space-bg: #050510;
+  --cover-bg: #1a1a3e;
+  --cover-leather: linear-gradient(145deg, #2a1a4a 0%, #150d2f 40%, #2a1a4a 60%, #150d2f 100%);
+  --cover-gold: #f0e030;
+  --cover-gold-glow: rgba(240, 224, 48, 0.4);
+  --page-bg: #f5e6c8;
+  --page-bg-grad: linear-gradient(135deg, #f5e6c8 0%, #e8d5b0 50%, #f0dfc0 100%);
+  --page-text: #2a1a0e;
+  --page-header: #4a2080;
+  --page-accent: #6b30a0;
+  --page-dim: #7a6a5a;
+  --terminal-bg: #0a0a0a;
+  --terminal-green: #33ff33;
+  --terminal-dim: #0d6b0d;
+  --terminal-amber: #ffaa00;
+  --terminal-glow: 0 0 5px rgba(51, 255, 51, 0.4);
+  --book-width: min(800px, 92vw);
+  --book-height: min(560px, 80vh);
+}
+
+html {
+  zoom: 1.75;
+}
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--space-bg);
+  font-family: 'Crimson Text', Georgia, serif;
+  color: var(--page-text);
+}
+
+/* ==============================
+   2. STARFIELD
+   ============================== */
+#starfield {
+  position: fixed; inset: 0;
+  z-index: 0;
+}
+
+#cybergrid {
+  position: fixed; inset: 0;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+#cybergrid.active {
+  opacity: 1;
+}
+
+#bg-bar-toggle {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 6px 0;
+  cursor: pointer; user-select: none;
+  border-bottom: 1px solid rgba(51, 255, 51, 0.1);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  color: var(--terminal-dim);
+  transition: color 0.2s;
+  flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+#bg-bar-toggle:hover { color: var(--terminal-green); }
+#bg-bar-toggle .toggle-arrow {
+  transition: transform 0.3s;
+  font-size: 0.6rem;
+}
+#bg-bar-toggle.open .toggle-arrow { transform: rotate(180deg); }
+
+/* ==============================
+   3. LOADING SCREEN
+   ============================== */
+#loading {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--space-bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace;
+  color: var(--terminal-green);
+  font-size: 14px;
+  transition: opacity 0.8s ease;
+}
+#loading.fade-out { opacity: 0; pointer-events: none; }
+#loading-text { text-align: center; line-height: 2; }
+.loading-line { opacity: 0; transition: opacity 0.3s; }
+.loading-line.visible { opacity: 1; }
+
+/* ==============================
+   4. COVER
+   ============================== */
+#cover-wrapper {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.6s ease;
+}
+#cover-wrapper.hidden { opacity: 0; pointer-events: none; }
+
+#cover {
+  width: var(--book-width); height: var(--book-height);
+  background: var(--terminal-bg);
+  border: 3px solid #3a2a6a;
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(42, 26, 74, 0.5), inset 0 0 30px rgba(0,0,0,0.5),
+    4px 4px 15px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.5s ease;
+}
+#cover-wrapper.hidden #cover { opacity: 0; }
+
+/* Steampunk bronze borders on terminal */
+.cover-border-top, .cover-border-bottom {
+  position: absolute;
+  left: 0; right: 0;
+  height: 28px;
+  z-index: 10;
+  pointer-events: none;
+  background: #0a0a0a;
+  border-radius: 8px 8px 0 0;
+}
+.cover-border-top { top: 0; }
+.cover-border-bottom { bottom: 0; border-radius: 0 0 8px 8px; z-index: 5; }
+.cover-border-top::after, .cover-border-bottom::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #c9943e 0%, #e8c36a 15%, #c9943e 30%, #8a6420 50%, #c9943e 70%, #e8c36a 85%, #c9943e 100%);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
+  mask-size: cover;
+  -webkit-mask-size: cover;
+}
+
+/* CRT scanlines on cover terminal */
+#cover::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 3px);
+  pointer-events: none; z-index: 2; border-radius: 8px;
+}
+#cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none; z-index: 3; border-radius: 8px;
+}
+
+/* Cover terminal layout */
+#cover-terminal {
+  display: flex; flex-direction: column;
+  height: 100%; position: relative;
+  zoom: calc(1 / 1.55);
+  padding-top: 44px;
+  padding-bottom: 44px;
+}
+
+.cover-header {
+  padding: 12px 20px 8px 20px;
+  border-bottom: 1px solid rgba(51, 255, 51, 0.15);
+  display: flex; align-items: baseline; gap: 15px;
+  flex-shrink: 0;
+}
+
+.cover-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: 900;
+  color: var(--cover-gold);
+  text-shadow: 0 0 15px var(--cover-gold-glow), 0 0 30px var(--cover-gold-glow);
+  letter-spacing: 0.08em;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.cover-sub {
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+  color: var(--terminal-dim);
+}
+
+/* Terminal body and input already styled via .terminal-page rules —
+   but on the cover they're direct children of #cover-terminal */
+#cover .terminal-body {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 15px 20px 10px 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  color: var(--terminal-green);
+  text-shadow: var(--terminal-glow);
+  line-height: 1.6;
+}
+#cover .terminal-body::-webkit-scrollbar { width: 6px; }
+#cover .terminal-body::-webkit-scrollbar-track { background: #111; }
+#cover .terminal-body::-webkit-scrollbar-thumb { background: #1a4a1a; border-radius: 3px; }
+
+#cover .terminal-input-row {
+  display: flex; align-items: center;
+  padding: 8px 20px 12px 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  color: var(--terminal-green);
+  text-shadow: var(--terminal-glow);
+  flex-shrink: 0;
+  position: relative; z-index: 4;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 15px var(--cover-gold-glow), 0 0 30px var(--cover-gold-glow); }
+  50% { text-shadow: 0 0 25px var(--cover-gold-glow), 0 0 50px var(--cover-gold-glow), 0 0 70px rgba(240,224,48,0.15); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ==============================
+   5. BOOK CONTAINER
+   ============================== */
+#book-wrapper {
+  position: fixed; inset: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.6s ease 0.4s;
+}
+#book-wrapper.visible { opacity: 1; pointer-events: auto; }
+
+#book-frame {
+  position: relative;
+  width: var(--book-width); height: var(--book-height);
+  overflow: hidden;
+  border-radius: 4px 12px 12px 4px;
+}
+
+#book {
+  width: 100%; height: 100%;
+  position: relative;
+  border-radius: 4px 12px 12px 4px;
+  overflow: hidden;
+}
+
+/* Book spine/frame */
+#book::before {
+  content: ''; position: absolute;
+  left: -8px; top: -4px; bottom: -4px; width: 12px;
+  background: linear-gradient(90deg, #150d2f, #2a1a4a, #150d2f);
+  border-radius: 4px 0 0 4px;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.4);
+  z-index: 100;
+}
+
+/* ==============================
+   6. PAGES
+   ============================== */
+.page {
+  background: var(--page-bg-grad) !important;
+  border-radius: 0 10px 10px 0;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.3), inset -2px 0 8px rgba(0,0,0,0.05);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 42px 40px 42px 45px;
+  font-size: 0.92rem;
+}
+
+.page::-webkit-scrollbar { width: 6px; }
+.page::-webkit-scrollbar-track { background: transparent; }
+.page::-webkit-scrollbar-thumb { background: #9a80c0; border-radius: 3px; }
+
+/* Steampunk bronze scroll borders — fixed to book edges, not scrolling */
+.book-border-top, .book-border-bottom {
+  position: absolute;
+  left: 0; right: 0;
+  height: 28px;
+  z-index: 200;
+  pointer-events: none;
+  background: #0a0a0a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  border-radius: 0 4px 4px 0;
+}
+.book-border-top::after, .book-border-bottom::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #c9943e 0%, #e8c36a 15%, #c9943e 30%, #8a6420 50%, #c9943e 70%, #e8c36a 85%, #c9943e 100%);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
+  mask-size: cover;
+  -webkit-mask-size: cover;
+  border-radius: 0 4px 4px 0;
+}
+.book-border-top {
+  top: 0;
+}
+.book-border-bottom {
+  bottom: 0;
+}
+
+/* Page header */
+.page-header {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.65rem;
+  color: var(--page-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d4c4a8;
+  margin-bottom: 20px;
+}
+
+.entry-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.3rem, 3.5vw, 2rem);
+  color: var(--page-header);
+  margin-bottom: 5px;
+}
+
+.entry-subtitle {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  color: var(--page-dim);
+  margin-bottom: 20px;
+}
+
+.entry-body { font-size: clamp(0.82rem, 1.8vw, 0.95rem); line-height: 1.7; color: var(--page-text); }
+.entry-body p { margin-bottom: 1em; }
+.entry-body .guide-note {
+  background: rgba(106, 48, 160, 0.06);
+  border-left: 3px solid var(--page-accent);
+  padding: 10px 15px; margin: 15px 0;
+  font-style: italic; font-size: 0.95em;
+}
+.entry-body .highlight { color: var(--page-header); font-weight: 700; }
+.entry-body .rating { font-family: 'Fira Code', monospace; font-size: 0.85em; color: var(--page-accent); }
+
+.skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; margin: 12px 0; }
+.skill-item { font-size: 0.9rem; line-height: 1.5; }
+.skill-cat { font-weight: 700; color: var(--page-header); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 12px; grid-column: 1 / -1; }
+
+.timeline-entry { margin-bottom: 20px; padding-left: 15px; border-left: 2px solid #d4c4a8; }
+.timeline-entry .role { font-weight: 700; color: var(--page-header); font-size: 1rem; }
+.timeline-entry .org { font-style: italic; color: var(--page-dim); font-size: 0.9rem; }
+.timeline-entry .period { font-family: 'Fira Code', monospace; font-size: 0.7rem; color: var(--page-dim); }
+.timeline-entry .desc { font-size: 0.9rem; margin-top: 5px; line-height: 1.6; }
+
+.project-item { margin-bottom: 15px; }
+.project-item .name { font-weight: 700; color: var(--page-header); }
+.project-item .detail { font-size: 0.9rem; line-height: 1.5; }
+
+/* Avatar */
+.avatar-container {
+  float: right;
+  margin: 0 0 15px 20px;
+  width: 160px;
+  position: relative;
+  cursor: pointer;
+}
+.avatar-container img {
+  width: 100%;
+  border-radius: 8px;
+  border: 2px solid var(--page-accent);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2), 0 0 20px rgba(106, 48, 160, 0.2);
+}
+.avatar-container .avatar-real {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  border-radius: 8px;
+  border: 2px solid var(--page-accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.avatar-container:hover .avatar-real {
+  opacity: 0.55;
+}
+.avatar-caption {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.6rem;
+  color: var(--page-dim);
+  text-align: center;
+  margin-top: 4px;
+}
+.avatar-hint {
+  color: #6699ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .avatar-container { float: none; margin: 0 auto 15px auto; width: 130px; }
+}
+
+/* ==============================
+   7. TERMINAL PAGE
+   ============================== */
+.page.terminal-page {
+  background: var(--terminal-bg);
+  padding: 0;
+  border-radius: 0 10px 10px 0;
+  display: flex; flex-direction: column;
+}
+
+/* CRT scanline overlay */
+.page.terminal-page::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none; z-index: 2;
+  border-radius: 0 10px 10px 0;
+}
+
+/* CRT flicker */
+.page.terminal-page::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none; z-index: 3;
+  border-radius: 0 10px 10px 0;
+  animation: crt-flicker 0.05s infinite alternate;
+}
+
+@keyframes crt-flicker {
+  0% { opacity: 0.97; }
+  100% { opacity: 1; }
+}
+
+.terminal-body {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 20px 20px 10px 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  color: var(--terminal-green);
+  text-shadow: var(--terminal-glow);
+  position: relative; z-index: 1;
+  line-height: 1.6;
+}
+
+.terminal-body::-webkit-scrollbar { width: 6px; }
+.terminal-body::-webkit-scrollbar-track { background: #111; }
+.terminal-body::-webkit-scrollbar-thumb { background: #1a4a1a; border-radius: 3px; }
+
+.terminal-line { margin-bottom: 2px; word-wrap: break-word; }
+.terminal-line.input-echo { color: #66ff66; }
+.terminal-line.error { color: #ff6666; }
+.terminal-line.system { color: var(--terminal-amber); }
+.terminal-line.dim { color: var(--terminal-dim); }
+.terminal-line.highlight { color: #66ffcc; }
+.terminal-line img {
+  max-width: 250px; max-height: 200px;
+  margin: 5px 0; border: 1px solid #1a4a1a;
+  border-radius: 4px;
+}
+
+.terminal-input-row {
+  display: flex; align-items: center;
+  padding: 8px 20px 15px 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  color: var(--terminal-green);
+  text-shadow: var(--terminal-glow);
+  position: relative; z-index: 4;
+}
+
+.terminal-prompt { white-space: nowrap; margin-right: 8px; }
+
+#terminal-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-family: 'Fira Code', monospace;
+  font-size: inherit; color: var(--terminal-green);
+  text-shadow: var(--terminal-glow);
+  caret-color: var(--terminal-green);
+}
+
+/* ==============================
+   8. NAVIGATION — Side Arrows
+   ============================== */
+/* Side arrow buttons */
+.side-arrow {
+  position: fixed;
+  top: 50%; transform: translateY(-50%);
+  z-index: 25;
+  background: rgba(42, 26, 74, 0.5);
+  border: 1px solid rgba(74, 58, 122, 0.5);
+  color: var(--cover-gold);
+  font-family: 'Fira Code', monospace;
+  font-size: 1.4rem;
+  padding: 18px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-shadow: 0 0 8px var(--cover-gold-glow);
+  opacity: 0; pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+.side-arrow.visible { opacity: 0.6; pointer-events: auto; }
+.side-arrow:hover { opacity: 1; background: rgba(42, 26, 74, 0.85); border-color: var(--cover-gold); }
+.side-arrow:disabled { opacity: 0.15 !important; cursor: default; pointer-events: none; }
+#arrow-left { left: max(8px, calc(50% - var(--book-width) / 2 - 50px)); }
+#arrow-right { right: max(8px, calc(50% - var(--book-width) / 2 - 50px)); }
+
+/* Bottom bar: dots + label + home button */
+#nav-bar {
+  position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+  z-index: 25; display: flex; align-items: center; gap: 12px;
+  opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+}
+#nav-bar.visible { opacity: 1; pointer-events: auto; }
+
+.page-dots { display: flex; gap: 8px; align-items: center; }
+.page-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #3a2a5a; border: 1px solid #5a4a7a;
+  cursor: pointer; transition: all 0.3s;
+}
+.page-dot.active { background: var(--cover-gold); box-shadow: 0 0 6px var(--cover-gold-glow); }
+
+#page-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.6rem; color: #8a7aba;
+  text-align: center; white-space: nowrap;
+}
+
+#btn-home {
+  background: rgba(42, 26, 74, 0.6); border: 1px solid #4a3a7a;
+  color: var(--cover-gold); font-family: 'Fira Code', monospace;
+  font-size: 0.7rem; padding: 4px 10px; border-radius: 4px;
+  cursor: pointer; transition: all 0.2s;
+  text-shadow: 0 0 6px var(--cover-gold-glow);
+  white-space: nowrap;
+}
+#btn-home:hover { background: rgba(42, 26, 74, 0.9); border-color: var(--cover-gold); }
+
+/* ==============================
+   9. GUI PANEL
+   ============================== */
+#gui-toggle {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 6px 0;
+  cursor: pointer; user-select: none;
+  border-top: 1px solid rgba(51, 255, 51, 0.1);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  color: var(--terminal-dim);
+  transition: color 0.2s;
+  flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+#gui-toggle:hover { color: var(--terminal-green); }
+#gui-toggle .toggle-arrow {
+  transition: transform 0.3s;
+  font-size: 0.6rem;
+}
+#gui-toggle.open .toggle-arrow { transform: rotate(180deg); }
+
+#gui-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+#gui-panel.open {
+  max-height: 300px;
+  overflow-y: auto;
+}
+#gui-panel::-webkit-scrollbar { width: 4px; }
+#gui-panel::-webkit-scrollbar-track { background: #0a0a0a; }
+#gui-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+.gui-inner {
+  padding: 10px 16px 14px 16px;
+  background: #0d0d0d;
+  border-top: 1px solid #222;
+}
+
+.gui-section-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: #f0e030;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 12px 0 8px 0;
+  text-shadow: 0 0 8px rgba(240, 224, 48, 0.3);
+}
+.gui-section-label:first-child { margin-top: 2px; }
+
+.gui-buttons {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+
+/* Hardware keycap style */
+.gui-btn {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  color: #d0d0d0;
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 60%, #111 100%);
+  border: 1px solid #3a3a3a;
+  border-bottom: 3px solid #0a0a0a;
+  border-radius: 5px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: all 0.1s;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 0 4px rgba(200, 200, 200, 0.15);
+  transform: translateY(-1px);
+}
+.gui-btn:hover {
+  background: linear-gradient(180deg, #3a3a3a 0%, #252525 60%, #1a1a1a 100%);
+  border-color: #555;
+  color: #f0e030;
+  text-shadow: 0 0 6px rgba(240, 224, 48, 0.3);
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.gui-btn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.3);
+  background: linear-gradient(180deg, #1a1a1a 0%, #111 100%);
+}
+.gui-btn.typing {
+  color: var(--terminal-green);
+  border-color: var(--terminal-green);
+  text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+  box-shadow: 0 2px 3px rgba(0,0,0,0.4), 0 0 8px rgba(51, 255, 51, 0.15);
+}
+.gui-btn .btn-icon {
+  font-style: normal;
+  margin-right: 4px;
+  opacity: 0.6;
+}
+
+/* ==============================
+   10. ANIMATIONS
+   ============================== */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ==============================
+   10. FOOTER
+   ============================== */
+#site-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #0a0a0a;
+  text-align: center;
+  padding: 4px 0;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.55rem;
+  color: #666;
+  z-index: 500;
+}
+#site-footer a {
+  color: #888;
+  text-decoration: none;
+}
+#site-footer a:hover {
+  color: #ccc;
+}
+
+/* ==============================
+   11. RESPONSIVE
+   ============================== */
+@media (max-width: 600px) {
+  .page { padding: 20px 20px 55px 25px; }
+  .skill-grid { grid-template-columns: 1fr; }
+  .terminal-body { padding: 15px 12px 8px 12px; }
+  .terminal-input-row { padding: 6px 12px 10px 12px; }
+  #nav-bar { bottom: 8px; gap: 6px; }
+  #arrow-left { left: 4px; }
+  #arrow-right { right: 4px; }
+  .side-arrow { padding: 14px 6px; font-size: 1.1rem; }
+  .gui-inner { padding: 6px 10px 10px 10px; }
+  .gui-btn { font-size: 0.7rem; padding: 3px 7px; }
+  .gui-section-label { font-size: 0.55rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==============================
+     STARFIELD CANVAS
+     ============================== -->
+<canvas id="starfield"></canvas>
+<canvas id="cybergrid" class="active"></canvas>
+
+<!-- ==============================
+     LOADING SCREEN
+     ============================== -->
+<div id="loading">
+  <div id="loading-text">
+    <div class="loading-line" data-delay="0">&gt; Initializing Hitchhiker's Guide v42.0...</div>
+    <div class="loading-line" data-delay="500">&gt; Calibrating Infinite Improbability Drive...</div>
+    <div class="loading-line" data-delay="1000">&gt; Locating nearest towel... [FOUND]</div>
+    <div class="loading-line" data-delay="1500">&gt; Loading Earth entry: "Mostly Harmless"...</div>
+    <div class="loading-line" data-delay="2000">&gt; Revising entry: "Mostly Harmless" &rarr; "Surprisingly Competent"</div>
+    <div class="loading-line" data-delay="2700">&gt; Ready. Remember: DON'T PANIC.</div>
+  </div>
+</div>
+
+<!-- ==============================
+     COVER (Terminal integrated)
+     ============================== -->
+<div id="cover-wrapper">
+  <div id="cover">
+    <div class="cover-border-top"></div>
+    <div class="cover-border-bottom"></div>
+    <div id="cover-terminal">
+      <div id="bg-bar-toggle">
+        <span class="toggle-arrow">&#9650;</span>
+        <span>LET ME PLAY WITH THE BACKGROUND</span>
+      </div>
+      <div class="cover-header">
+        <span class="cover-title">DON'T PANIC</span>
+      </div>
+      <div class="terminal-body" id="terminal-output"></div>
+      <div class="terminal-input-row">
+        <span class="terminal-prompt">hitchhiker@guide:~$&nbsp;</span>
+        <input type="text" id="terminal-input" spellcheck="false" autocomplete="off" autofocus>
+      </div>
+
+      <!-- GUI Panel -->
+      <div id="gui-toggle">
+        <span class="toggle-arrow">&#9660;</span>
+        <span>ENABLE GUI</span>
+      </div>
+      <div id="gui-panel">
+        <div class="gui-inner">
+          <div class="gui-section-label">Resume &amp; Info</div>
+          <div class="gui-buttons">
+            <button class="gui-btn" data-cmd="hats"><i class="btn-icon">&#9812;</i>Hats</button>
+            <button class="gui-btn" data-cmd="skills"><i class="btn-icon">&#9881;</i>Skills</button>
+            <button class="gui-btn" data-cmd="workexp"><i class="btn-icon">&#9992;</i>Work History</button>
+            <button class="gui-btn" data-cmd="projects"><i class="btn-icon">&#9733;</i>Projects</button>
+            <button class="gui-btn" data-cmd="presentations"><i class="btn-icon">&#9835;</i>Presentations</button>
+            <button class="gui-btn" data-cmd="experiments"><i class="btn-icon">&#9883;</i>Experiments</button>
+          </div>
+
+          <div class="gui-section-label">Explore</div>
+          <div class="gui-buttons">
+            <button class="gui-btn" data-cmd="cat 300"><i class="btn-icon">&#128049;</i>Cat</button>
+            <button class="gui-btn" data-cmd="dog 300"><i class="btn-icon">&#128054;</i>Dog</button>
+            <button class="gui-btn" data-cmd="pokemon"><i class="btn-icon">&#9889;</i>Pokemon</button>
+            <button class="gui-btn" data-cmd="space"><i class="btn-icon">&#127776;</i>Space</button>
+            <button class="gui-btn" data-cmd="trivia"><i class="btn-icon">&#10068;</i>Trivia</button>
+            <button class="gui-btn" data-cmd="advice"><i class="btn-icon">&#128161;</i>Advice</button>
+            <button class="gui-btn" data-cmd="fact"><i class="btn-icon">&#8734;</i>Fact</button>
+            <button class="gui-btn" data-cmd="vogon"><i class="btn-icon">&#128216;</i>Vogon Poetry</button>
+          </div>
+
+          <div class="gui-section-label">Essentials</div>
+          <div class="gui-buttons">
+            <button class="gui-btn" data-cmd="42"><i class="btn-icon">&#10024;</i>42</button>
+            <button class="gui-btn" data-cmd="towel"><i class="btn-icon">&#127856;</i>Towel</button>
+            <button class="gui-btn" data-cmd="improbability"><i class="btn-icon">&#9851;</i>Improbability</button>
+            <button class="gui-btn" data-cmd="whoami"><i class="btn-icon">&#128269;</i>Who Am I</button>
+            <button class="gui-btn" data-cmd="guide"><i class="btn-icon">&#128214;</i>Open Guide</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     BOOK (Guide entry pages)
+     ============================== -->
+<div id="book-wrapper">
+  <div id="book-frame">
+    <div class="book-border-top"></div>
+    <div class="book-border-bottom"></div>
+    <div id="book">
+
+    <!-- PAGE 0: ABOUT -->
+    <div class="page" id="pg-about">
+      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Earth Edition &mdash; Entry #7,742,112</div>
+      <div class="entry-title">Seth Timmons</div>
+      <div class="entry-subtitle">Classification: Surprisingly Competent &middot; Sector: Sol III (Earth) &middot; Region: Classified</div>
+      <div class="entry-body">
+        <div class="avatar-container">
+          <img src="digital_avatar.png" alt="Seth Timmons — Digital Likeness">
+          <img src="human_profile.jpg" alt="Seth Timmons — Actual Human" class="avatar-real">
+          <div class="avatar-caption">Fig. 1: <span class="avatar-hint">Artist's</span> rendering of his last appearance.</div>
+        </div>
+        <p><span class="highlight">Seth Timmons</span> is a bipedal carbon-based life form primarily stationed in the digital infrastructure of a small Earth-based educational technology concern called <span class="highlight">DualEnroll</span>, where he holds the title of <em>Workflow and Integrations Engineer</em>&mdash;a designation the Guide's editorial department required three attempts and a stiff Pan Galactic Gargle Blaster to properly file.</p>
+
+        <p>His primary function involves convincing disparate computer systems to communicate with one another, a task roughly as straightforward as mediating a territorial dispute between a Vogon constructor fleet and a bypass-averse planet. He achieves this through an arsenal of automation pipelines, integration frameworks, and what colleagues describe as "an alarming tolerance for YAML."</p>
+
+        <div class="guide-note">
+          <strong>Editor's Note:</strong> Despite initial survey classifications, the Guide's research department has revised the 'Mostly Harmless' designation to 'Surprisingly Competent,' citing over thirteen Earth-years of continuous infrastructure management and an improbable ability to debug production issues at 3 AM while maintaining conversational pleasantness.
+        </div>
+
+        <p>Prior to his current posting, Timmons spent <span class="highlight">thirteen years</span> at a sprawling Earth institution known as <em>Idaho State University</em>, where he rose through the ranks from a one-man development operation to a senior analyst responsible for enterprise integrations, application architecture, and the general well-being of approximately everything with a blinking light.</p>
+
+        <p>He is known to enjoy tabletop role-playing games (a curious Earth ritual involving dice and collective storytelling), Raspberry Pi projects (small computing devices named after neither raspberries nor pies), and building tools that help people practice freestyle rapping (an Earth art form the Guide's cultural department is still attempting to classify).</p>
+
+        <p class="rating">RELIABILITY RATING: &#9733;&#9733;&#9733;&#9733;&#9734; &middot; PANIC FACTOR: Low (usually) &middot; TOWEL STATUS: Always knows where it is</p>
+      </div>
+    </div>
+
+    <!-- PAGE 1: SKILLS & HATS -->
+    <div class="page" id="pg-skills">
+      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Equipment & Designations Catalog</div>
+      <div class="entry-title">Hats &amp; Equipment</div>
+      <div class="entry-subtitle">Known tools, technologies, and vocational designations of specimen TIMMONS, SETH</div>
+      <div class="entry-body">
+        <p>The Guide notes that this particular Earthling wears an <em>improbable number of hats</em>, none of them actual hats. The following vocational designations have been catalogued by the Guide's Field Research Division:</p>
+
+        <div class="guide-note">
+          <strong>Vocational Designations (Hats):</strong>
+          Workflow &amp; Integrations Engineer &middot; Application Analyst &middot; Computer Analyst &middot; Database Administrator &middot; Full Stack Developer &middot; Front-End Engineer &middot; Server &amp; System Administrator &middot; Web Developer
+        </div>
+
+        <p>The following is an incomplete catalog of implements this entity has been observed wielding. Reliability ratings are assigned by the Guide's Testing Department (which was dissolved in a budget restructuring and subsequently reconstituted as a vending machine on Betelgeuse Seven).</p>
+
+        <div class="skill-grid">
+          <div class="skill-cat">Planetary Operating Systems</div>
+          <div class="skill-item">Linux (Ubuntu, RHEL, Fedora) &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Windows / Mac &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+
+          <div class="skill-cat">Data Repositories</div>
+          <div class="skill-item">MySQL &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Oracle / PL/SQL &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+
+          <div class="skill-cat">Incantation Languages (Scripting)</div>
+          <div class="skill-item">Bash / Shell &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Python &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+
+          <div class="skill-cat">Frontend Instrumentation</div>
+          <div class="skill-item">HTML5 / CSS3 / JavaScript &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">jQuery / AJAX &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Bootstrap / Foundation &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+
+          <div class="skill-cat">Backend Propulsion</div>
+          <div class="skill-item">PHP &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Ruby on Rails &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+          <div class="skill-item">Perl &#9733;&#9733;&#9733;&#9734;&#9734;</div>
+
+          <div class="skill-cat">Integration Protocols</div>
+          <div class="skill-item">REST APIs &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">GraphQL &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+          <div class="skill-item">Postman &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+
+          <div class="skill-cat">AI &amp; Context Engineering</div>
+          <div class="skill-item">Claude / Anthropic API &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Context Engineering &amp; Prompt Design &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Claude Skills &amp; Custom Commands &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+
+          <div class="skill-cat">Notable Galactic Systems</div>
+          <div class="skill-item">Ellucian Colleague / Banner (ERP) &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+          <div class="skill-item">Ellucian Ethos / Data Model &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="skill-item">Terminal Four / WordPress (CMS) &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+          <div class="skill-item">Heroku &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+
+          <div class="skill-cat">Testing &amp; Accessibility</div>
+          <div class="skill-item">Playwright &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+          <div class="skill-item">Web Accessibility Standards (WCAG) &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+
+          <div class="skill-cat">DevOps &amp; Version Control</div>
+          <div class="skill-item">Git / GitHub &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+
+          <div class="skill-cat">Recreational Tinkering</div>
+          <div class="skill-item">Raspberry Pi Projects &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+          <div class="skill-item">TensorFlow (Machine Learning) &#9733;&#9733;&#9733;&#9734;&#9734;</div>
+          <div class="skill-item">Idle Games &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        </div>
+
+        <div class="guide-note">
+          <strong>Field Note:</strong> Subject's preferred text editor is Vi. When asked why, subject mumbled something about <code>:wq</code> being "faster than any GUI" before disappearing into a terminal window. The Guide's UX department remains skeptical but acknowledges the results speak for themselves.
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: WORK HISTORY -->
+    <div class="page" id="pg-work">
+      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Galactic Travel Log</div>
+      <div class="entry-title">Travel Log</div>
+      <div class="entry-subtitle">A chronological record of assignments across various sectors of the galaxy</div>
+      <div class="entry-body">
+        <p>The following is an abridged travel log documenting the professional assignments of specimen Timmons, as recorded by the Guide's Bureau of Interstellar Employment.</p>
+
+        <div class="timeline-entry">
+          <div class="role">Workflow &amp; Integrations Engineer</div>
+          <div class="org">DualEnroll &middot; EdTech Sector</div>
+          <div class="period">Apr 2025 &mdash; Present &middot; Remote Operations</div>
+          <div class="desc">Currently stationed at DualEnroll, an educational technology concern, where he engineers the workflows and integration pipelines that keep the machinery of dual enrollment humming across the galaxy&mdash;or at least across the continental United States, which to be fair is a sufficiently complex system to keep any sentient being occupied.</div>
+        </div>
+
+        <div class="timeline-entry">
+          <div class="role">Information Technology Application Analyst</div>
+          <div class="org">Idaho State University &middot; Higher Education Sector</div>
+          <div class="period">Apr 2018 &mdash; Mar 2025 &middot; 7 years</div>
+          <div class="desc">Led the Ellucian Ethos integration initiative, bridging the gaps between diverse and inconsistent enterprise systems via custom integrations. Responsible for application analysis, log retrieval, root cause analysis, and MySQL database administration integrated with critical university services including emergency systems. The Guide notes this role involved "making things talk to each other that desperately did not want to."</div>
+        </div>
+
+        <div class="timeline-entry">
+          <div class="role">IT Computer Analyst</div>
+          <div class="org">Idaho State University</div>
+          <div class="period">Jun 2015 &mdash; Apr 2018 &middot; 2 years 11 months</div>
+          <div class="desc">Known among colleagues as the "All-Purpose UNIX, Programming and Database Guy"&mdash;a title that, while not officially sanctioned, proved alarmingly accurate. Built full-stack LAMP applications from scratch including a fiber optic plant management system that tracked every building, location, cabinet, panel, port, strand, and cable pathway on campus. Also developed custom integrations for Cisco Jabber, Bluecats IPAM, Nagios XI, and Pinnacle.</div>
+        </div>
+
+        <div class="timeline-entry">
+          <div class="role">Web Application Developer</div>
+          <div class="org">Idaho State University</div>
+          <div class="period">Feb 2012 &mdash; Jun 2015 &middot; 3 years 5 months</div>
+          <div class="desc">One-man full stack operation. Server design, creation, installation, and administration. Relational database design and administration. All client and server-side programming. The Guide's assessment: "Impressively self-sufficient. Also possibly sleep-deprived."</div>
+        </div>
+
+        <div class="guide-note">
+          <strong>Bureau Note:</strong> Total documented service: 13+ Earth-years of continuous infrastructure management. The Bureau rates this duration as "commendable" and "mildly terrifying."
+        </div>
+
+        <p style="margin-top:15px;"><strong>Recorded Transmissions (Presentations):</strong></p>
+        <div class="timeline-entry" style="margin-top:8px;">
+          <div class="role">WestNet Conference &mdash; NOAA, Boulder, Colorado</div>
+          <div class="period">June 2018</div>
+          <div class="desc">"FiDo &mdash; Implementation and Lessons Learned"</div>
+        </div>
+        <div class="timeline-entry">
+          <div class="role">WestNet Conference &mdash; BSU, Boise, Idaho</div>
+          <div class="period">June 2015</div>
+          <div class="desc">"Managing Copper and Fiber Optic Plant Facilities With Dynamic Web Applications"</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: PROJECTS & EXPERIMENTS -->
+    <div class="page" id="pg-projects">
+      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Field Reports &amp; Experiments</div>
+      <div class="entry-title">Field Reports</div>
+      <div class="entry-subtitle">Notable discoveries, constructions, and dubious experiments</div>
+      <div class="entry-body">
+        <p>The following field reports have been filed with the Guide's editorial office. Some are sanctioned. Others are classified under "seemed like a good idea at the time."</p>
+
+        <p style="font-weight:700; color: var(--page-header); margin-top: 15px;">SANCTIONED PROJECTS</p>
+
+        <div class="project-item">
+          <div class="name">Experience Campus Portal Implementation</div>
+          <div class="detail">Designed and deployed a unified portal experience for all campus community members. Available as native applications in both the Apple Store and Google Play Store. The Guide notes it was "received with extremely positive reception," which in higher education is roughly equivalent to a standing ovation on Magrathea.</div>
+        </div>
+
+        <div class="project-item">
+          <div class="name">Asset Management Implementation</div>
+          <div class="detail">Consolidated sources of truth across an entire university campus to create a unified asset tracking system. A monumentally complex task involving strict audit requirements and diverse stakeholder needs. Described as "a resounding success," which the Guide's editors confirm is not sarcasm for once.</div>
+        </div>
+
+        <div class="project-item">
+          <div class="name">Fiber Optic Plant Management System</div>
+          <div class="detail">A database-driven web application tracking every building, location, storage unit, cabinet, panel, port, fiber optic strand, and cable pathway on campus. If it carried a signal, this system knew about it. Presented at WestNet 2015.</div>
+        </div>
+
+        <div class="project-item">
+          <div class="name">Custom LAMP Stack Applications (Assorted)</div>
+          <div class="detail">A constellation of applications including: billing documentation walkthroughs, IP-phone FAC code generators, mail center management tools, ticketing system portals, and a CSS framework called Pagebuilder. All built on Linux, Apache, MySQL, and PHP with Bootstrap frontends and dynamic data visualizations.</div>
+        </div>
+
+        <p style="font-weight:700; color: var(--page-header); margin-top: 20px;">UNSANCTIONED EXPERIMENTS</p>
+
+        <div class="project-item">
+          <div class="name">The Game Master's Database</div>
+          <div class="detail">A hand-built resource collecting and organizing a plethora of D&amp;D resources from various corners of the web. The Guide's recreational activities department rates this as "evidence of a well-organized mind applied to fantastical ends."</div>
+        </div>
+
+        <div class="project-item">
+          <div class="name">Just Freestyle</div>
+          <div class="detail">A tool using open APIs to generate sets of random words paired with random freestyle beats from YouTube. The end result: a place people go to practice freestyle rapping. The Guide's cultural department is <em>still</em> attempting to classify this art form.</div>
+        </div>
+
+        <div class="project-item">
+          <div class="name">This Very Guide</div>
+          <div class="detail">You're reading it. A Hitchhiker's Guide-themed interactive portfolio with a working terminal, live API integrations, and an unreasonable number of Douglas Adams references. The Guide rates it: "Meta, but in a good way."</div>
+        </div>
+
+        <div class="guide-note">
+          <strong>Editor's Note:</strong> The subject's approach to projects follows a consistent pattern: identify a problem, build an elegant solution, and then build three more things because they thought of something cool along the way. The Guide's productivity analysts find this both admirable and slightly exhausting.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /book -->
+  </div><!-- /book-frame -->
+</div><!-- /book-wrapper -->
+
+<!-- ==============================
+     NAVIGATION — Side Arrows
+     ============================== -->
+<button class="side-arrow" id="arrow-left">&larr;</button>
+<button class="side-arrow" id="arrow-right">&rarr;</button>
+
+<!-- Bottom bar: dots + home -->
+<div id="nav-bar">
+  <button id="btn-home">&#9776; Cover</button>
+  <div class="page-dots" id="page-dots"></div>
+  <div id="page-label"></div>
+</div>
+
+<div id="site-footer">Created with &lt;3 by <a href="https://www.linkedin.com/in/sethtimmons/" target="_blank" rel="noopener">Seth Timmons</a></div>
+
+<!-- ==============================
+     JAVASCRIPT
+     ============================== -->
+<script>
+(function() {
+  'use strict';
+
+  /* ==============================
+     D3 STAR MAP BACKGROUND
+     Real Yale Bright Star Catalog data (1,627 stars)
+     rendered via D3 geoStereographic on canvas with
+     slow rotation, graticule, and twinkle effects.
+     Based on Observable @d3/star-map by Mike Bostock.
+     ============================== */
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  // Projection: flipped stereographic centered on North Pole
+  const projection = d3.geoStereographic()
+    .reflectY(true)
+    .rotate([0, -90])
+    .precision(0.1);
+
+  const geoPath = d3.geoPath(projection, ctx);
+  const graticule = d3.geoGraticule().stepMinor([15, 10])();
+  const outline = d3.geoCircle().radius(90).center([0, 90])();
+
+  // Magnitude to pixel radius (matches Observable: [6,-1] → [0,8])
+  const radiusScale = d3.scaleLinear([6, -1], [0, 6]);
+
+  // Greek letter abbreviation → symbol mapping
+  const greekLetters = {alf:"α",bet:"β",gam:"γ",del:"δ",eps:"ε",zet:"ζ",eta:"η",tet:"θ",iot:"ι",kap:"κ",lam:"λ",mu:"μ",nu:"ν",xi:"ξ",omi:"ο",pi:"π",ro:"ρ",sig:"σ",tau:"τ",ups:"υ",phi:"φ",chi:"χ",psi:"ψ",omg:"ω"};
+  // Constellation abbreviation → full name
+  const constellationNames = {And:"Andromeda",Ant:"Antlia",Aps:"Apus",Aqr:"Aquarius",Aql:"Aquila",Ara:"Ara",Ari:"Aries",Aur:"Auriga",Boo:"Boötes",Cae:"Caelum",Cam:"Camelopardalis",Cnc:"Cancer",CVn:"Canes Venatici",CMa:"Canis Major",CMi:"Canis Minor",Cap:"Capricornus",Car:"Carina",Cas:"Cassiopeia",Cen:"Centaurus",Cep:"Cepheus",Cet:"Cetus",Cha:"Chamaeleon",Cir:"Circinus",Col:"Columba",Com:"Coma Berenices",CrA:"Corona Austrina",CrB:"Corona Borealis",Crv:"Corvus",Crt:"Crater",Cru:"Crux",Cyg:"Cygnus",Del:"Delphinus",Dor:"Dorado",Dra:"Draco",Equ:"Equuleus",Eri:"Eridanus",For:"Fornax",Gem:"Gemini",Gru:"Grus",Her:"Hercules",Hor:"Horologium",Hya:"Hydra",Hyi:"Hydrus",Ind:"Indus",Lac:"Lacerta",Leo:"Leo",LMi:"Leo Minor",Lep:"Lepus",Lib:"Libra",Lup:"Lupus",Lyn:"Lynx",Lyr:"Lyra",Men:"Mensa",Mic:"Microscopium",Mon:"Monoceros",Mus:"Musca",Nor:"Norma",Oct:"Octans",Oph:"Ophiuchus",Ori:"Orion",Pav:"Pavo",Peg:"Pegasus",Per:"Perseus",Phe:"Phoenix",Pic:"Pictor",Psc:"Pisces",PsA:"Piscis Austrinus",Pup:"Puppis",Pyx:"Pyxis",Ret:"Reticulum",Sge:"Sagitta",Sgr:"Sagittarius",Sco:"Scorpius",Scl:"Sculptor",Sct:"Scutum",Ser:"Serpens",Sex:"Sextans",Tau:"Taurus",Tel:"Telescopium",Tri:"Triangulum",TrA:"Triangulum Australe",Tuc:"Tucana",UMa:"Ursa Major",UMi:"Ursa Minor",Vel:"Vela",Vir:"Virgo",Vol:"Volans",Vul:"Vulpecula"};
+
+  // Star catalog (loaded async)
+  let starCatalog = [];
+  let starsReady = false;
+
+  // Mouse tracking for hover labels
+  let mouseX = -9999, mouseY = -9999;
+  canvas.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+  canvas.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
+
+  // Random twinkle-blink system: periodically pick random labeled stars to flash bright
+  let blinkingStars = new Set();
+  let blinkTimers = {};
+  function scheduleRandomBlinks() {
+    setInterval(() => {
+      if (!starsReady) return;
+      // Pick 1-3 labeled stars to blink
+      const labeled = starCatalog.filter(s => s.label);
+      if (labeled.length === 0) return;
+      const count = 1 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < count; i++) {
+        const star = labeled[Math.floor(Math.random() * labeled.length)];
+        const id = star.id;
+        if (blinkingStars.has(id)) continue;
+        blinkingStars.add(id);
+        star.blinkStart = performance.now();
+        // Remove blink after 0.6-1.4 seconds
+        const dur = 600 + Math.random() * 800;
+        setTimeout(() => { blinkingStars.delete(id); }, dur);
+      }
+    }, 1200 + Math.random() * 2000);
+  }
+  scheduleRandomBlinks();
+
+  // Load real star data from CSV
+  d3.csv('stars.csv').then(raw => {
+    starCatalog = raw.map((d, i) => {
+      const ra_h = +d.RA_hour, ra_m = +d.RA_min, ra_s = +d.RA_sec;
+      const dec_d = +d.dec_deg, dec_m = +d.dec_min, dec_s = +d.dec_sec;
+      const lon = (ra_h + ra_m / 60 + ra_s / 3600) * 15;
+      const lat = dec_d + dec_m / 60 + dec_s / 3600;
+      const mag = +d.magnitude;
+      // Build label: greek letter + constellation name
+      let label = null;
+      if (d.constellation && d.constellation !== '') {
+        const greekAbbr = d.greek_letter ? d.greek_letter.replace(/\d/g, '').trim() : null;
+        const greekSym = greekAbbr ? (greekLetters[greekAbbr] || '') : '';
+        const constName = constellationNames[d.constellation] || d.constellation;
+        label = greekSym ? `${greekSym} ${constName}` : constName;
+      }
+      return {
+        id: i,
+        coords: [lon, lat],
+        mag,
+        label,
+        twinklePhase: i * 1.618,
+        twinkleSpeed: 0.4 + (i % 7) * 0.25,
+        blinkStart: 0
+      };
+    }).sort((a, b) => a.mag - b.mag);
+    starsReady = true;
+  }).catch(() => {
+    for (let i = 0; i < 800; i++) {
+      const lon = Math.random() * 360;
+      const lat = Math.asin(2 * Math.random() - 1) * (180 / Math.PI);
+      starCatalog.push({
+        id: i, coords: [lon, lat],
+        mag: 1 + Math.pow(Math.random(), 0.4) * 5,
+        label: null,
+        twinklePhase: Math.random() * Math.PI * 2,
+        twinkleSpeed: 0.4 + Math.random() * 1.5,
+        blinkStart: 0
+      });
+    }
+    starsReady = true;
+  });
+
+  // Sizing
+  function sizeCanvas() {
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const dim = Math.max(window.innerWidth, window.innerHeight);
+    projection
+      .scale((dim - 120) * 0.5)
+      .clipExtent([[0, 0], [window.innerWidth, window.innerHeight]])
+      .translate([window.innerWidth / 2, window.innerHeight / 2]);
+  }
+  sizeCanvas();
+  window.addEventListener('resize', sizeCanvas);
+
+  // Render loop
+  let rotAngle = 0;
+
+  function renderStarMap(time) {
+    const t = time / 1000;
+    rotAngle += 0.008; // Very slow rotation
+    projection.rotate([rotAngle, -90]);
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    ctx.clearRect(0, 0, W, H);
+
+    // Background gradient (deep space blue-purple → black)
+    const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.7);
+    bgGrad.addColorStop(0, '#0a0d2e');
+    bgGrad.addColorStop(1, '#030308');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Outline circle
+    ctx.beginPath();
+    geoPath(outline);
+    ctx.strokeStyle = 'rgba(100, 80, 160, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Graticule grid
+    ctx.beginPath();
+    geoPath(graticule);
+    ctx.strokeStyle = 'rgba(80, 70, 130, 0.08)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    if (!starsReady) {
+      requestAnimationFrame(renderStarMap);
+      return;
+    }
+
+    // Draw stars and labels
+    const hoverRadius = 150; // pixels - radius of hover reveal zone
+    const now = performance.now();
+
+    for (const star of starCatalog) {
+      const pos = projection(star.coords);
+      if (!pos) continue;
+      if (pos[0] < -10 || pos[0] > W + 10 || pos[1] < -10 || pos[1] > H + 10) continue;
+
+      const r = radiusScale(star.mag);
+      if (r <= 0) continue;
+
+      // Twinkle effect
+      const twinkle = 0.65 + 0.35 * Math.sin(t * star.twinkleSpeed + star.twinklePhase);
+      const alpha = Math.min(1, twinkle * (r / 3 + 0.3));
+      const drawR = r * (0.85 + 0.15 * twinkle);
+
+      // Check if this star is in a blink state
+      const isBlinking = blinkingStars.has(star.id);
+      let blinkBoost = 0;
+      if (isBlinking && star.blinkStart) {
+        const elapsed = now - star.blinkStart;
+        const dur = 1000;
+        // Bell curve: ramp up then down
+        const progress = Math.min(elapsed / dur, 1);
+        blinkBoost = Math.sin(progress * Math.PI); // 0→1→0
+      }
+
+      // Glow halo for bright stars (magnitude < 2.5) or blinking stars
+      if (star.mag < 2.5 || blinkBoost > 0.3) {
+        const glowIntensity = star.mag < 2.5 ? alpha * 0.12 : blinkBoost * 0.1;
+        const glowR = drawR * (4 + blinkBoost * 3);
+        const glow = ctx.createRadialGradient(pos[0], pos[1], 0, pos[0], pos[1], glowR);
+        glow.addColorStop(0, `rgba(180, 180, 255, ${glowIntensity})`);
+        glow.addColorStop(0.4, `rgba(140, 130, 200, ${glowIntensity * 0.3})`);
+        glow.addColorStop(1, 'rgba(140, 130, 200, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(pos[0], pos[1], glowR, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Star dot — brighter if blinking
+      const dotAlpha = Math.min(1, alpha + blinkBoost * 0.5);
+      const dotR = drawR + blinkBoost * 1.5;
+      ctx.beginPath();
+      ctx.arc(pos[0], pos[1], dotR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220, 220, 255, ${dotAlpha})`;
+      ctx.fill();
+
+      // --- LABELS ---
+      if (!star.label) continue;
+      if (star.mag > 4.5) continue; // Only label notable stars
+
+      // Distance from mouse
+      const dx = pos[0] - mouseX;
+      const dy = pos[1] - mouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Hover proximity: closer = more visible
+      const hoverFactor = dist < hoverRadius
+        ? Math.pow(1 - dist / hoverRadius, 1.5) // smooth falloff
+        : 0;
+
+      // Base label opacity: barely visible ghost
+      const baseLabelAlpha = star.mag < 2 ? 0.06 : 0.03;
+
+      // Blink boost for labels
+      const labelBlinkAlpha = blinkBoost * 0.55;
+
+      // Combined label alpha
+      const labelAlpha = Math.min(1, baseLabelAlpha + hoverFactor * 0.85 + labelBlinkAlpha);
+      if (labelAlpha < 0.02) continue;
+
+      // Font: bolder when hovered or blinking
+      const isHighlighted = hoverFactor > 0.3 || blinkBoost > 0.4;
+      const fontSize = isHighlighted
+        ? (star.mag < 2 ? 12 : 10)
+        : (star.mag < 2 ? 10 : 8);
+      ctx.font = `${isHighlighted ? 'bold ' : ''}${fontSize}px 'Fira Code', monospace`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+
+      // Glow behind text when highlighted
+      if (isHighlighted) {
+        ctx.shadowColor = `rgba(180, 160, 255, ${labelAlpha * 0.6})`;
+        ctx.shadowBlur = 8;
+      }
+
+      ctx.fillStyle = `rgba(200, 190, 255, ${labelAlpha})`;
+      ctx.fillText(star.label, pos[0] + dotR + 4, pos[1]);
+
+      // Reset shadow
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    }
+
+    requestAnimationFrame(renderStarMap);
+  }
+
+  requestAnimationFrame(renderStarMap);
+
+  /* ==============================
+     CYBERGRID BACKGROUND
+     ============================== */
+  const cgCanvas = document.getElementById('cybergrid');
+  const cgCtx = cgCanvas.getContext('2d');
+  let cgActive = true;
+  let cgMouse = { x: -9999, y: -9999 };
+  let cgNodes = [];
+  let cgEdges = [];
+  const CG_SPACING = 50;
+  const CG_CONNECT_DIST = 75;
+  const CG_PULL_RADIUS = 250;
+  const CG_PULL_STRENGTH = 0.035;
+  const CG_RETURN_STRENGTH = 0.03;
+  const CG_DAMPING = 0.92;
+
+  function cgInit() {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    cgCanvas.width = W * dpr;
+    cgCanvas.height = H * dpr;
+    cgCanvas.style.width = W + 'px';
+    cgCanvas.style.height = H + 'px';
+    cgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    cgNodes = [];
+    cgEdges = [];
+    const cols = Math.ceil(W / CG_SPACING) + 2;
+    const rows = Math.ceil(H / CG_SPACING) + 2;
+    const ox = (W - (cols - 1) * CG_SPACING) / 2;
+    const oy = (H - (rows - 1) * CG_SPACING) / 2;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const hx = ox + c * CG_SPACING;
+        const hy = oy + r * CG_SPACING;
+        cgNodes.push({ hx, hy, x: hx, y: hy, vx: 0, vy: 0, row: r, col: c });
+      }
+    }
+
+    // Build edges (horizontal + vertical + diagonals)
+    for (let i = 0; i < cgNodes.length; i++) {
+      const n = cgNodes[i];
+      for (let j = i + 1; j < cgNodes.length; j++) {
+        const m = cgNodes[j];
+        const dx = n.hx - m.hx, dy = n.hy - m.hy;
+        if (Math.sqrt(dx * dx + dy * dy) <= CG_CONNECT_DIST) {
+          cgEdges.push([i, j]);
+        }
+      }
+    }
+  }
+
+  cgInit();
+  window.addEventListener('resize', cgInit);
+
+  document.addEventListener('mousemove', e => {
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    cgMouse.x = e.clientX / z;
+    cgMouse.y = e.clientY / z;
+  });
+  document.addEventListener('mouseleave', () => { cgMouse.x = -9999; cgMouse.y = -9999; });
+
+  function cgRender(time) {
+    if (!cgActive) { requestAnimationFrame(cgRender); return; }
+    const t = time / 1000;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    cgCtx.clearRect(0, 0, W, H);
+
+    // Deep dark background
+    cgCtx.fillStyle = '#030308';
+    cgCtx.fillRect(0, 0, W, H);
+
+    // Physics: pull toward cursor (blackhole), spring back to home
+    for (const n of cgNodes) {
+      const dx = cgMouse.x - n.x;
+      const dy = cgMouse.y - n.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Blackhole pull — stronger when closer
+      if (dist < CG_PULL_RADIUS && dist > 1) {
+        const force = CG_PULL_STRENGTH * Math.pow(1 - dist / CG_PULL_RADIUS, 2);
+        n.vx += dx / dist * force * CG_PULL_RADIUS * 0.15;
+        n.vy += dy / dist * force * CG_PULL_RADIUS * 0.15;
+      }
+
+      // Spring back to home position
+      n.vx += (n.hx - n.x) * CG_RETURN_STRENGTH;
+      n.vy += (n.hy - n.y) * CG_RETURN_STRENGTH;
+
+      // Damping
+      n.vx *= CG_DAMPING;
+      n.vy *= CG_DAMPING;
+
+      n.x += n.vx;
+      n.y += n.vy;
+    }
+
+    // Draw edges with rainbow hue based on displacement + distance from cursor
+    for (const [i, j] of cgEdges) {
+      const a = cgNodes[i], b = cgNodes[j];
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      const distA = Math.sqrt((a.x - a.hx) ** 2 + (a.y - a.hy) ** 2);
+      const distB = Math.sqrt((b.x - b.hx) ** 2 + (b.y - b.hy) ** 2);
+      const displacement = (distA + distB) / 2;
+      const cursorDist = Math.sqrt((mx - cgMouse.x) ** 2 + (my - cgMouse.y) ** 2);
+
+      // Rainbow hue spiderwebs from cursor
+      const hue = (cursorDist * 0.8 + t * 60) % 360;
+      const saturation = 80 + displacement * 2;
+      const lightness = 30 + Math.min(displacement * 3, 40);
+      const alpha = 0.15 + Math.min(displacement / 30, 0.7);
+
+      cgCtx.beginPath();
+      cgCtx.moveTo(a.x, a.y);
+      cgCtx.lineTo(b.x, b.y);
+      cgCtx.strokeStyle = `hsla(${hue}, ${Math.min(saturation, 100)}%, ${Math.min(lightness, 70)}%, ${alpha})`;
+      cgCtx.lineWidth = 0.5 + Math.min(displacement / 20, 1.5);
+      cgCtx.stroke();
+    }
+
+    // Draw nodes — small dots, brighter near cursor
+    for (const n of cgNodes) {
+      const dist = Math.sqrt((n.x - cgMouse.x) ** 2 + (n.y - cgMouse.y) ** 2);
+      const displacement = Math.sqrt((n.x - n.hx) ** 2 + (n.y - n.hy) ** 2);
+      const hue = (dist * 0.8 + t * 60) % 360;
+      const nodeAlpha = 0.2 + Math.min(displacement / 15, 0.8);
+      const r = 1 + Math.min(displacement / 15, 2);
+
+      cgCtx.beginPath();
+      cgCtx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      cgCtx.fillStyle = `hsla(${hue}, 90%, 60%, ${nodeAlpha})`;
+      cgCtx.fill();
+
+      // Bright glow for highly displaced nodes
+      if (displacement > 8) {
+        const glowR = r * 4;
+        const glow = cgCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowR);
+        glow.addColorStop(0, `hsla(${hue}, 100%, 70%, ${displacement / 80})`);
+        glow.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);
+        cgCtx.fillStyle = glow;
+        cgCtx.beginPath();
+        cgCtx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+        cgCtx.fill();
+      }
+    }
+
+    requestAnimationFrame(cgRender);
+  }
+  requestAnimationFrame(cgRender);
+
+  // BG bar toggle — hides terminal content, makes cover transparent so BG shows
+  const bgBarToggle = document.getElementById('bg-bar-toggle');
+  let bgPlayMode = false;
+  bgBarToggle.addEventListener('click', () => {
+    bgPlayMode = !bgPlayMode;
+    bgBarToggle.classList.toggle('open', bgPlayMode);
+    bgBarToggle.querySelector('span:last-child').textContent = bgPlayMode ? 'BACK TO TERMINAL' : 'LET ME PLAY WITH THE BACKGROUND';
+
+    // Hide/show everything EXCEPT the bg-bar-toggle itself
+    const header = document.querySelector('.cover-header');
+    const termBody = document.getElementById('terminal-output');
+    const termInput = document.querySelector('.terminal-input-row');
+    const guiToggle = document.getElementById('gui-toggle');
+    const guiPanel = document.getElementById('gui-panel');
+    [header, termBody, termInput, guiToggle, guiPanel].forEach(el => {
+      if (el) el.style.display = bgPlayMode ? 'none' : '';
+    });
+
+    // Make cover transparent so the background is visible, don't change which BG is active
+    document.getElementById('cover').style.background = bgPlayMode ? 'transparent' : '';
+    document.getElementById('cover').style.boxShadow = bgPlayMode ? 'none' : '';
+    document.getElementById('cover').style.border = bgPlayMode ? 'none' : '';
+  });
+
+  /* ==============================
+     LOADING SEQUENCE
+     ============================== */
+  const loadingEl = document.getElementById('loading');
+  const coverWrapper = document.getElementById('cover-wrapper');
+  const loadingLines = document.querySelectorAll('.loading-line');
+
+  coverWrapper.style.display = 'none';
+
+  loadingLines.forEach(line => {
+    const delay = parseInt(line.dataset.delay);
+    setTimeout(() => line.classList.add('visible'), delay);
+  });
+
+  setTimeout(() => {
+    loadingEl.classList.add('fade-out');
+    coverWrapper.style.display = 'flex';
+    coverWrapper.style.animation = 'fadeIn 0.8s ease forwards';
+    setTimeout(() => {
+      loadingEl.remove();
+      document.getElementById('terminal-input').focus();
+    }, 800);
+  }, 3800);
+
+  /* ==============================
+     VIEW STATE: Cover (terminal) vs Book (guide pages)
+     ============================== */
+  const bookWrapper = document.getElementById('book-wrapper');
+  const arrowLeft = document.getElementById('arrow-left');
+  const arrowRight = document.getElementById('arrow-right');
+  const navBar = document.getElementById('nav-bar');
+  const btnHome = document.getElementById('btn-home');
+  let viewMode = 'cover'; // 'cover' or 'book'
+
+  function showCover() {
+    viewMode = 'cover';
+    coverWrapper.style.display = 'flex';
+    // Force reflow so display:flex takes effect before removing hidden
+    coverWrapper.offsetHeight;
+    coverWrapper.classList.remove('hidden');
+    bookWrapper.classList.remove('visible');
+    navBar.classList.remove('visible');
+    arrowLeft.classList.remove('visible');
+    arrowRight.classList.add('visible');
+    arrowRight.disabled = false;
+    setTimeout(() => document.getElementById('terminal-input').focus(), 700);
+  }
+
+  function showBook() {
+    viewMode = 'book';
+    coverWrapper.classList.add('hidden');
+    bookWrapper.classList.add('visible');
+    navBar.classList.add('visible');
+    // Hide cover after fade-out completes
+    setTimeout(() => { if (viewMode === 'book') coverWrapper.style.display = 'none'; }, 700);
+    // Reset to first page when opening book
+    if (typeof pageFlip !== 'undefined' && pageFlip.getPageCount() > 0) {
+      pageFlip.turnToPage(0);
+      currentPage = 0;
+    }
+    updateBookNav();
+  }
+
+  // Right arrow on cover opens the book
+  arrowRight.addEventListener('click', () => {
+    if (viewMode === 'cover') {
+      showBook();
+    } else {
+      nextPage();
+    }
+  });
+
+  // Left arrow: go back; on first page, return to cover
+  arrowLeft.addEventListener('click', () => {
+    if (viewMode === 'book' && currentPage === 0) {
+      showCover();
+    } else {
+      prevPage();
+    }
+  });
+
+  // Home button returns to cover
+  btnHome.addEventListener('click', showCover);
+
+  /* ==============================
+     PAGE NAVIGATION (Book mode) — StPageFlip
+     ============================== */
+  const pages = document.querySelectorAll('.page');
+  const pageNames = ['About', 'Skills & Hats', 'Travel Log', 'Field Reports'];
+  const dotsContainer = document.getElementById('page-dots');
+  const pageLabel = document.getElementById('page-label');
+  let currentPage = 0;
+  const totalPages = pages.length;
+  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // Initialize StPageFlip — single page mode, use offsetWidth/Height (unaffected by CSS zoom)
+  const bookEl = document.getElementById('book');
+  const pw = bookEl.offsetWidth;
+  const ph = bookEl.offsetHeight;
+  const pageFlip = new St.PageFlip(bookEl, {
+    width: pw,
+    height: ph,
+    size: 'fixed',
+    maxWidth: pw,
+    maxHeight: ph,
+    minWidth: pw,
+    minHeight: ph,
+    maxShadowOpacity: 0.5,
+    showCover: true,
+    flippingTime: 1200,
+    useMouseEvents: isMobile,
+    usePortrait: true,
+    mobileScrollSupport: true,
+    swipeDistance: 40,
+    drawShadow: true,
+    autoSize: false
+  });
+
+  pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+
+  // Create dots
+  pageNames.forEach((name, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'page-dot' + (i === 0 ? ' active' : '');
+    dot.title = name;
+    dot.addEventListener('click', () => goToPage(i));
+    dotsContainer.appendChild(dot);
+  });
+
+  // Listen for page flip events
+  pageFlip.on('flip', (e) => {
+    currentPage = e.data;
+    updateBookNav();
+  });
+
+  function updateBookNav() {
+    arrowLeft.classList.add('visible');
+    arrowLeft.disabled = false;
+    arrowRight.classList.add('visible');
+    arrowRight.disabled = currentPage === totalPages - 1;
+    document.querySelectorAll('.page-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === currentPage);
+    });
+    pageLabel.textContent = `${pageNames[currentPage]} (${currentPage + 1}/${totalPages})`;
+  }
+
+  function goToPage(target) {
+    if (target === currentPage || target < 0 || target >= totalPages) return;
+    currentPage = target;
+    updateBookNav();
+    pageFlip.flip(target);
+  }
+
+  function nextPage() {
+    if (viewMode !== 'book' || currentPage >= totalPages - 1) return;
+    currentPage++;
+    updateBookNav();
+    pageFlip.flipNext('bottom');
+  }
+  function prevPage() {
+    if (viewMode !== 'book' || currentPage <= 0) return;
+    currentPage--;
+    updateBookNav();
+    pageFlip.flipPrev('bottom');
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (document.activeElement === document.getElementById('terminal-input')) {
+      if (e.key === 'Escape') { e.preventDefault(); showBook(); return; }
+      if (e.ctrlKey && e.key === 'ArrowRight') { e.preventDefault(); if (viewMode === 'cover') showBook(); else nextPage(); }
+      if (e.ctrlKey && e.key === 'ArrowLeft') { e.preventDefault(); if (viewMode === 'book' && currentPage === 0) showCover(); else prevPage(); }
+      return;
+    }
+    if (e.key === 'Escape') { e.preventDefault(); showCover(); return; }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (viewMode === 'cover') showBook(); else nextPage();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (viewMode === 'book' && currentPage === 0) showCover(); else prevPage();
+    }
+  });
+
+  // Initial state: cover visible, right arrow visible
+  arrowRight.classList.add('visible');
+
+  /* ==============================
+     TERMINAL EMULATOR
+     ============================== */
+  const termOutput = document.getElementById('terminal-output');
+  const termInput = document.getElementById('terminal-input');
+  const cmdHistory = [];
+  let historyIdx = -1;
+
+  function print(text, cls = '') {
+    const line = document.createElement('div');
+    line.className = 'terminal-line' + (cls ? ' ' + cls : '');
+    line.innerHTML = text;
+    termOutput.appendChild(line);
+    termOutput.scrollTop = termOutput.scrollHeight;
+  }
+
+  function printImage(url, alt) {
+    const line = document.createElement('div');
+    line.className = 'terminal-line';
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = alt || '';
+    img.onload = () => { termOutput.scrollTop = termOutput.scrollHeight; };
+    line.appendChild(img);
+    termOutput.appendChild(line);
+    termOutput.scrollTop = termOutput.scrollHeight;
+  }
+
+  // Welcome message
+  function printWelcome() {
+    print('╔════════════════════════════════════════════════════════╗', 'system');
+    print('║  HITCHHIKER\'S GUIDE TO SETH TIMMONS — TERMINAL v42.0  ║', 'system');
+    print('╚════════════════════════════════════════════════════════╝', 'system');
+    print('');
+    print('Entry loaded: <span style="color:#66ffcc">TIMMONS, SETH</span>', 'highlight');
+    print('Classification: Surprisingly Competent');
+    print('');
+    print('This entity has been observed wearing an improbable');
+    print('number of hats, none of them actual hats.');
+    print('');
+    print('The Guide\'s research department has catalogued the following:');
+    print('  · Workflow & Integrations Engineer');
+    print('  · Application Analyst');
+    print('  · Full Stack Developer');
+    print('  · Database Administrator');
+    print('  · System & Server Administrator');
+    print('  · Front-End Engineer');
+    print('  · Web Developer');
+    print('');
+    print('Use command "<span style="color:#66ffcc">hats</span>" to pull up this list again.');
+    print('Try "<span style="color:#66ffcc">help</span>" to discover more about this specimen.', 'dim');
+    print('');
+  }
+
+  printWelcome();
+
+  // Command registry
+  const commandList = [
+    'help', 'hats', 'skills', 'workexp', 'projects', 'presentations',
+    'experiments', 'about', 'whoami', 'clear', 'history', '42',
+    'cat', 'dog', 'advice', 'fact', 'vogon', 'trivia', 'pokemon',
+    'space', 'iam', 'improbability', 'towel', 'babel', 'guide'
+  ];
+
+  const commands = {
+    help() {
+      print('');
+      print('The Guide is always here to help. Unlike most help desks.', 'system');
+      print('');
+      print('To view <span style="color:#66ffcc">Resume Information</span>, try:', 'highlight');
+      print('  · hats           — Vocational designations');
+      print('  · skills         — Equipment & capabilities catalog');
+      print('  · workexp        — Galactic travel log');
+      print('  · projects       — Sanctioned field reports');
+      print('  · presentations  — Recorded transmissions');
+      print('  · experiments    — Unsanctioned experiments');
+      print('');
+      print('If you are just <span style="color:#66ffcc">poking around for fun</span>, try:', 'highlight');
+      print('  · cat [size]     — Consult fauna archives');
+      print('  · dog [size]     — More fauna archives');
+      print('  · pokemon [name] — Earth fiction creatures');
+      print('  · advice         — Wisdom from the Guide');
+      print('  · fact           — Improbability readings');
+      print('  · vogon          — Vogon poetry recital');
+      print('  · trivia         — Test your galactic knowledge');
+      print('  · space          — Interstellar transmissions');
+      print('  · 42             — You know what this is');
+      print('  · towel          — Check towel status');
+      print('  · improbability  — Engage the Drive');
+      print('  · iam &lt;name&gt;     — Identify yourself');
+      print('  · babel &lt;text&gt;   — Babel Fish translation');
+      print('  · guide          — Open the Guide (page view)');
+      print('  · about          — About this terminal');
+      print('  · clear          — Clear screen');
+      print('');
+      print('Use Tab to auto-complete. Arrow keys for history.', 'dim');
+      print('');
+    },
+
+    hats() {
+      print('');
+      print('Vocational Designations (Hats) on file:', 'system');
+      print('  · Workflow & Integrations Engineer');
+      print('  · Application Analyst');
+      print('  · Computer Analyst');
+      print('  · Database Administrator');
+      print('  · Full Stack Developer');
+      print('  · Front-End Engineer');
+      print('  · Server Administrator');
+      print('  · System Administrator');
+      print('  · Systems Analyst');
+      print('  · Web Developer');
+      print('');
+      print('None of these are actual hats.', 'dim');
+      print('');
+    },
+
+    skills() {
+      print('');
+      print('Equipment & Capabilities Catalog:', 'system');
+      print('');
+      print('<span style="color:#ffaa00">Planetary Operating Systems</span>');
+      print('  Linux (Ubuntu, RHEL, Fedora) · Windows · Mac');
+      print('<span style="color:#ffaa00">Data Repositories</span>');
+      print('  MySQL · Oracle · PL/SQL');
+      print('<span style="color:#ffaa00">Incantation Languages</span>');
+      print('  Bash/Shell · Python · PHP · Ruby on Rails · Perl');
+      print('<span style="color:#ffaa00">Frontend Instrumentation</span>');
+      print('  HTML5 · CSS3 · JavaScript · jQuery · AJAX');
+      print('  Bootstrap · Foundation · Font Awesome');
+      print('<span style="color:#ffaa00">Integration Protocols</span>');
+      print('  REST APIs · GraphQL · Postman');
+      print('<span style="color:#ffaa00">AI & Context Engineering</span>');
+      print('  Claude / Anthropic API · Context Engineering');
+      print('  Claude Skills · Custom Commands · Integrations');
+      print('<span style="color:#ffaa00">Notable Galactic Systems</span>');
+      print('  Ellucian Colleague · Banner · Ethos Data Model');
+      print('  Terminal Four CMS · WordPress · Heroku');
+      print('<span style="color:#ffaa00">Testing & Accessibility</span>');
+      print('  Playwright · Web Accessibility Standards (WCAG)');
+      print('<span style="color:#ffaa00">DevOps & Version Control</span>');
+      print('  Git · GitHub');
+      print('<span style="color:#ffaa00">Recreational Tinkering</span>');
+      print('  Raspberry Pi · TensorFlow · Idle Games');
+      print('');
+    },
+
+    workexp() {
+      print('');
+      print('Galactic Travel Log:', 'system');
+      print('');
+      print('<span style="color:#66ffcc">DualEnroll</span> — Workflow & Integrations Engineer');
+      print('  Apr 2025 – Present · Remote', 'dim');
+      print('  EdTech sector. Workflows. Integrations. The usual.');
+      print('');
+      print('<span style="color:#66ffcc">Idaho State University</span> — 13 years 2 months');
+      print('');
+      print('  Application Analyst (2018–2025)');
+      print('  Led Ethos Integration initiative. Enterprise app');
+      print('  analysis. Log review. Root cause analysis. MySQL DBA.');
+      print('');
+      print('  Computer Analyst (2015–2018)');
+      print('  "All-Purpose UNIX, Programming and Database Guy."');
+      print('  Full stack LAMP apps. Fiber optic plant management.');
+      print('  Integrations: Jabber, Bluecats IPAM, Nagios XI.');
+      print('');
+      print('  Web Application Developer (2012–2015)');
+      print('  One-man full stack operation. Server design to');
+      print('  client-side programming. Everything in between.');
+      print('');
+    },
+
+    projects() {
+      print('');
+      print('Sanctioned Field Reports:', 'system');
+      print('  · Experience Campus Portal Implementation');
+      print('  · Asset Management Implementation');
+      print('  · Fiber Optic Plant Management System');
+      print('  · Database Driven Dynamic Mapping');
+      print('  · Billing Documentation & Interactive Walkthrough');
+      print('  · IP-Phone FAC Code Generator');
+      print('  · Mail Center Forward/Hold Manager');
+      print('  · ISU Online Directory & Jabber Directory');
+      print('  · Ticketing System Index & Search Portal');
+      print('  · Pagebuilder CSS Framework');
+      print('');
+      print('Use "experiments" for the unsanctioned stuff.', 'dim');
+      print('');
+    },
+
+    presentations() {
+      print('');
+      print('Recorded Transmissions:', 'system');
+      print('');
+      print('  WestNet June 2018 (NOAA | Boulder, Colorado)');
+      print('  · "FiDo — Implementation and Lessons Learned"');
+      print('');
+      print('  WestNet June 2015 (BSU | Boise, Idaho)');
+      print('  · "Managing Copper and Fiber Optic Plant Facilities');
+      print('     With Dynamic Web Applications"');
+      print('');
+    },
+
+    experiments() {
+      print('');
+      print('Unsanctioned Experiments:', 'system');
+      print('');
+      print('<span style="color:#66ffcc">This Guide</span>');
+      print('  You\'re looking at it. An interactive Hitchhiker\'s');
+      print('  Guide-themed portfolio. Seemed like a good idea.');
+      print('');
+      print('<span style="color:#66ffcc">The Game Master\'s Database</span>');
+      print('  A hand-built resource organizing D&D content from');
+      print('  across the web. For when you need to roll initiative.');
+      print('');
+      print('<span style="color:#66ffcc">Just Freestyle</span>');
+      print('  Uses open APIs to generate random words + freestyle');
+      print('  beats from YouTube. A place to practice rapping.');
+      print('  The Guide\'s cultural dept. is still classifying this.');
+      print('');
+    },
+
+    about() {
+      print('');
+      print('HITCHHIKER\'S GUIDE TO THE GALAXY — TERMINAL v42.0', 'system');
+      print('');
+      print('A fully interactive terminal interface to the Guide\'s');
+      print('database entry for Seth Timmons. Built with vanilla');
+      print('HTML, CSS, and JavaScript. No frameworks were harmed');
+      print('in the making of this terminal.');
+      print('');
+      print('Powered by free, open APIs. Because APIs are kind of');
+      print('this guy\'s whole thing.');
+      print('');
+      print('Source: github.com/timmseth/timmseth.github.io', 'dim');
+      print('');
+    },
+
+    whoami() {
+      print('');
+      print('Scanning retinal patterns...', 'dim');
+      print('Cross-referencing galactic citizen registry...', 'dim');
+      print('');
+      print('You are a visitor to the Guide. Your identity is');
+      print('"Mostly Unknown" but you seem like a good sort.');
+      print('');
+      print('Try "iam &lt;name&gt;" to register with the Guide.', 'dim');
+      print('');
+    },
+
+    clear() {
+      termOutput.innerHTML = '';
+    },
+
+    history() {
+      print('');
+      print('Command History:', 'system');
+      if (cmdHistory.length === 0) {
+        print('  No commands yet. The Guide is patient.', 'dim');
+      } else {
+        cmdHistory.forEach((cmd, i) => {
+          print(`  ${i + 1}. ${cmd}`);
+        });
+      }
+      print('');
+    },
+
+    '42'() {
+      print('');
+      print('The Answer to the Ultimate Question of Life,', 'system');
+      print('the Universe, and Everything.', 'system');
+      print('');
+      print('...is, of course, <span style="color:#66ffcc;font-size:1.2em;font-weight:bold">42</span>.');
+      print('');
+      print('The Guide reminds you that the real problem was');
+      print('always figuring out what the Question was.');
+      print('');
+      // Also fetch a fact about 42
+      fetchJSON('http://numbersapi.com/42?json').then(data => {
+        if (data && data.text) print('Fun fact: ' + data.text, 'dim');
+      }).catch(() => {});
+    },
+
+    towel() {
+      print('');
+      print('Checking towel status...', 'dim');
+      print('');
+      const statuses = [
+        'Your towel is exactly where you left it. Good.',
+        'Towel Status: SECURE. You are a hoopy frood.',
+        'Your towel is present and accounted for. The Guide approves.',
+        'Towel located. You clearly know where your towel is.',
+        'WARNING: Towel slightly damp. Otherwise nominal.',
+        'Towel Status: IMPECCABLE. You are the froopiest of hoopy froods.',
+      ];
+      print(statuses[Math.floor(Math.random() * statuses.length)], 'highlight');
+      print('');
+      print('"A towel is about the most massively useful thing', 'dim');
+      print(' an interstellar hitchhiker can have."', 'dim');
+      print('');
+    },
+
+    async cat(args) {
+      const size = parseInt(args) || 300;
+      print('');
+      print('Consulting the Guide\'s Earth fauna archives...', 'dim');
+      try {
+        const data = await fetchJSON('https://api.thecatapi.com/v1/images/search');
+        if (data && data[0] && data[0].url) {
+          print(`Category: Small Domestic Predator (${size}px viewport)`, 'system');
+          printImage(data[0].url, 'A cat from the Guide archives');
+        } else throw new Error();
+      } catch {
+        print('The fauna archives are temporarily unavailable.', 'error');
+        print('The Guide apologizes for the inconvenience.', 'dim');
+      }
+      print('');
+    },
+
+    async dog(args) {
+      const size = parseInt(args) || 300;
+      print('');
+      print('Accessing companion creature database...', 'dim');
+      try {
+        const data = await fetchJSON('https://dog.ceo/api/breeds/image/random');
+        if (data && data.message) {
+          print(`Category: Loyal Quadruped Companion (${size}px viewport)`, 'system');
+          printImage(data.message, 'A dog from the Guide archives');
+        } else throw new Error();
+      } catch {
+        print('The companion creature database is offline.', 'error');
+        print('The Guide apologizes for the inconvenience.', 'dim');
+      }
+      print('');
+    },
+
+    async advice() {
+      print('');
+      print('The Guide is formulating wisdom...', 'dim');
+      try {
+        const data = await fetchJSON('https://api.adviceslip.com/advice', { cache: 'no-store' });
+        if (data && data.slip) {
+          print('');
+          print('The Guide offers this wisdom:', 'system');
+          print(`"${data.slip.advice}"`, 'highlight');
+        } else throw new Error();
+      } catch {
+        print('The wisdom generators are recalibrating.', 'error');
+      }
+      print('');
+    },
+
+    async fact() {
+      print('');
+      print('Engaging Infinite Improbability sensors...', 'dim');
+      // Try multiple fact APIs with fallback to local facts
+      const localFacts = [
+        "A group of flamingos is called a 'flamboyance.'",
+        "Honey never spoils. Archaeologists have found 3,000-year-old honey in Egyptian tombs that was still edible.",
+        "Octopuses have three hearts, nine brains, and blue blood.",
+        "A day on Venus is longer than a year on Venus.",
+        "The inventor of the Pringles can is buried in one.",
+        "Bananas are berries, but strawberries aren't.",
+        "There are more possible iterations of a game of chess than there are atoms in the known universe.",
+        "The shortest war in history lasted 38 to 45 minutes, between Britain and Zanzibar in 1896.",
+        "A teaspoonful of neutron star would weigh about 6 billion tons.",
+        "The total weight of all ants on Earth is roughly equal to the total weight of all humans.",
+        "Oxford University is older than the Aztec Empire.",
+        "There are more stars in the universe than grains of sand on all of Earth's beaches.",
+        "Wombat poop is cube-shaped.",
+        "The speed of a computer mouse is measured in Mickeys.",
+        "The first computer bug was an actual bug — a moth found in a Harvard Mark II computer in 1947.",
+        "The average person walks the equivalent of five times around the world in their lifetime.",
+        "A cloud can weigh more than a million pounds.",
+        "The number 42 appears in the works of Lewis Carroll, who was a mathematician and friend of the number.",
+        "TCP packets can technically travel faster through space than through fiber optic cables on Earth.",
+        "The first 1 GB hard drive, announced in 1980, weighed about 550 pounds and cost $40,000.",
+      ];
+      let gotFact = false;
+      try {
+        const data = await fetchJSON('https://catfact.ninja/fact');
+        if (data && data.fact) {
+          print('');
+          print('Improbability Reading (Feline Division):', 'system');
+          print(data.fact, 'highlight');
+          gotFact = true;
+        }
+      } catch {}
+      if (!gotFact) {
+        print('');
+        print('Improbability Reading:', 'system');
+        print(localFacts[Math.floor(Math.random() * localFacts.length)], 'highlight');
+      }
+      print('');
+    },
+
+    async vogon() {
+      print('');
+      print('WARNING: Incoming Vogon poetry transmission...', 'system');
+      print('The Guide advises bracing for impact.', 'dim');
+      print('');
+      try {
+        const resp = await fetch('https://icanhazdadjoke.com/', {
+          headers: { 'Accept': 'application/json' }
+        });
+        const data = await resp.json();
+        if (data && data.joke) {
+          print('<em>*clears throat with a sound like a cat being bathed*</em>', 'dim');
+          print('');
+          print(`"${data.joke}"`, 'highlight');
+          print('');
+          print('— Prostetnic Vogon Jeltz (probably)', 'dim');
+          print('');
+          const reactions = [
+            'The audience politely loses consciousness.',
+            'Three hitchhikers have requested emergency evacuation.',
+            'Your towel is now slightly more damp from stress.',
+            'The Infinite Improbability Drive briefly engaged out of sympathy.',
+          ];
+          print(reactions[Math.floor(Math.random() * reactions.length)], 'dim');
+        } else throw new Error();
+      } catch {
+        print('The Vogon poetry transmitter has mercifully malfunctioned.', 'error');
+      }
+      print('');
+    },
+
+    async trivia() {
+      print('');
+      print('Accessing the Guide\'s quiz database...', 'dim');
+      try {
+        const data = await fetchJSON('https://opentdb.com/api.php?amount=1&type=multiple');
+        if (data && data.results && data.results[0]) {
+          const q = data.results[0];
+          const answers = [...q.incorrect_answers, q.correct_answer].sort(() => Math.random() - 0.5);
+          print('');
+          print(`Category: ${decodeHTML(q.category)}`, 'system');
+          print(`Difficulty: ${q.difficulty}`, 'dim');
+          print('');
+          print(decodeHTML(q.question), 'highlight');
+          print('');
+          answers.forEach((a, i) => {
+            const letter = String.fromCharCode(65 + i);
+            const isCorrect = a === q.correct_answer;
+            print(`  ${letter}. ${decodeHTML(a)}${isCorrect ? ' ✓' : ''}${isCorrect ? '' : ''}`);
+          });
+          print('');
+          print(`Answer: ${decodeHTML(q.correct_answer)}`, 'dim');
+        } else throw new Error();
+      } catch {
+        print('The quiz database has gone to lunch.', 'error');
+      }
+      print('');
+    },
+
+    async pokemon(args) {
+      const query = args ? args.toLowerCase().trim() : Math.floor(Math.random() * 898) + 1;
+      print('');
+      print('Scanning Earth fiction creature database...', 'dim');
+      try {
+        const data = await fetchJSON(`https://pokeapi.co/api/v2/pokemon/${query}`);
+        if (data && data.name) {
+          print('');
+          print(`Creature: ${data.name.toUpperCase()}`, 'system');
+          print(`ID: #${data.id} · Height: ${data.height/10}m · Weight: ${data.weight/10}kg`);
+          print(`Types: ${data.types.map(t => t.type.name).join(', ')}`);
+          print(`Abilities: ${data.abilities.map(a => a.ability.name).join(', ')}`);
+          if (data.sprites && data.sprites.front_default) {
+            printImage(data.sprites.front_default, data.name);
+          }
+          print('');
+          print('The Guide classifies this as "fictional but oddly detailed."', 'dim');
+        } else throw new Error();
+      } catch {
+        print(`Creature "${query}" not found in Earth fiction database.`, 'error');
+      }
+      print('');
+    },
+
+    async space() {
+      print('');
+      print('Intercepting transmission from Earth\'s primitive space agency...', 'dim');
+      try {
+        const data = await fetchJSON('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+        if (data && data.title) {
+          print('');
+          print(`Transmission: ${data.title}`, 'system');
+          print(`Date: ${data.date}`, 'dim');
+          print('');
+          if (data.hdurl || data.url) {
+            printImage(data.hdurl || data.url, data.title);
+          }
+          if (data.explanation) {
+            // Truncate long explanations
+            const words = data.explanation.split(' ');
+            const short = words.slice(0, 40).join(' ') + (words.length > 40 ? '...' : '');
+            print(short);
+          }
+          print('');
+          print('The Guide notes that Earth\'s space program is', 'dim');
+          print('"charmingly enthusiastic for a Level 2 civilization."', 'dim');
+        } else throw new Error();
+      } catch {
+        print('Space agency transmission lost. They\'re probably fine.', 'error');
+      }
+      print('');
+    },
+
+    iam(args) {
+      const name = args ? args.trim() : '';
+      print('');
+      if (!name) {
+        print('Usage: iam &lt;name&gt;', 'dim');
+        print('');
+        return;
+      }
+      print(`Cross-referencing galactic citizen registry...`, 'dim');
+      print('');
+      const greetings = [
+        `Welcome, ${name}. The Guide has updated your visitor badge.`,
+        `Ah, ${name}! The Guide was expecting someone taller.`,
+        `${name}, registered. Please keep your towel nearby at all times.`,
+        `Greetings, ${name}. Your improbability factor is within acceptable limits.`,
+        `Welcome aboard, ${name}. Try not to get vaporized.`,
+        `${name}! The Guide rates your name as "pleasantly pronounceable."`,
+        `Noted: ${name}. The Guide's hospitality subroutine is now active.`,
+      ];
+      print(greetings[Math.floor(Math.random() * greetings.length)], 'highlight');
+      print('');
+    },
+
+    async improbability() {
+      print('');
+      print('Engaging Infinite Improbability Drive...', 'system');
+      print('');
+      // Randomly choose an API to call
+      const options = ['advice', 'fact', 'vogon', 'trivia'];
+      const choice = options[Math.floor(Math.random() * options.length)];
+      print(`Drive output: ${choice.toUpperCase()} anomaly detected.`, 'dim');
+      print('');
+      await commands[choice]('');
+    },
+
+    babel(args) {
+      const text = args ? args.trim() : '';
+      print('');
+      if (!text) {
+        print('Usage: babel &lt;text&gt;', 'dim');
+        print('Runs text through the Babel Fish for translation.', 'dim');
+        print('');
+        return;
+      }
+      print('Inserting Babel Fish into ear canal...', 'dim');
+      print('(This is the most unpleasant sensation.)', 'dim');
+      print('');
+
+      // Fun transformations
+      const transforms = [
+        { name: 'Vogon Bureaucratic', fn: t => t.split(' ').map(w => w.toUpperCase()).join(' ') + '. FORM 27B/6 REQUIRED.' },
+        { name: 'Reverse Babel', fn: t => t.split('').reverse().join('') },
+        { name: 'Magrathean Academic', fn: t => 'In the grand cosmic perspective, ' + t.toLowerCase() + ', which is to say, rather insignificant really.' },
+        { name: 'Zaphod Breeblebrox', fn: t => 'Hey, ' + t + '! Isn\'t that just zarking amazing? I\'m so great.' },
+        { name: 'Marvin the Paranoid Android', fn: t => 'I could translate "' + t + '" but what\'s the point? We\'re all going to die anyway. Brain the size of a planet and they ask me to translate things.' },
+      ];
+      const transform = transforms[Math.floor(Math.random() * transforms.length)];
+      print(`Translation (${transform.name}):`, 'system');
+      print(transform.fn(text), 'highlight');
+      print('');
+    },
+
+    guide(args) {
+      print('');
+      print('Opening the Guide...', 'system');
+      print('Use the arrow buttons or Escape to return here.', 'dim');
+      print('');
+      setTimeout(() => showBook(), 500);
+    }
+  };
+
+  /* ==============================
+     COMMAND EXECUTION
+     ============================== */
+  function executeCommand(input) {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    cmdHistory.push(trimmed);
+    historyIdx = cmdHistory.length;
+
+    print(`hitchhiker@guide:~$ ${escapeHTML(trimmed)}`, 'input-echo');
+
+    const parts = trimmed.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    if (commands[cmd]) {
+      commands[cmd](args);
+    } else {
+      print('');
+      print(`The Guide has no entry for '${escapeHTML(cmd)}'.`, 'error');
+      print('The editors suggest trying \'help\'.', 'dim');
+      print('');
+    }
+  }
+
+  // Terminal input handling
+  termInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      executeCommand(termInput.value);
+      termInput.value = '';
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (cmdHistory.length > 0) {
+        historyIdx = Math.max(0, historyIdx - 1);
+        termInput.value = cmdHistory[historyIdx] || '';
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      historyIdx = Math.min(cmdHistory.length, historyIdx + 1);
+      termInput.value = cmdHistory[historyIdx] || '';
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const partial = termInput.value.trim().toLowerCase();
+      if (partial) {
+        const matches = commandList.filter(c => c.startsWith(partial));
+        if (matches.length === 1) {
+          termInput.value = matches[0] + ' ';
+        } else if (matches.length > 1) {
+          print(`hitchhiker@guide:~$ ${escapeHTML(termInput.value)}`, 'input-echo');
+          print(matches.join('  '), 'dim');
+        }
+      }
+    }
+  });
+
+  // Click terminal to focus input
+  document.getElementById('cover').addEventListener('click', (e) => {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.closest('#gui-toggle') && !e.target.closest('#gui-panel')) {
+      termInput.focus();
+    }
+  });
+
+  /* ==============================
+     GUI PANEL — Toggle + Typewriter Command Execution
+     ============================== */
+  const guiToggle = document.getElementById('gui-toggle');
+  const guiPanel = document.getElementById('gui-panel');
+  let guiOpen = false;
+  let isTyping = false;
+
+  guiToggle.addEventListener('click', () => {
+    guiOpen = !guiOpen;
+    guiToggle.classList.toggle('open', guiOpen);
+    guiPanel.classList.toggle('open', guiOpen);
+    guiToggle.querySelector('span:last-child').textContent = guiOpen ? 'DISABLE GUI' : 'ENABLE GUI';
+  });
+
+  // Typewriter effect: type command letter by letter, then execute
+  function typeAndExecute(cmd, btn) {
+    if (isTyping) return;
+    isTyping = true;
+    if (btn) btn.classList.add('typing');
+    termInput.value = '';
+    termInput.focus();
+
+    let i = 0;
+    const speed = 35 + Math.random() * 20; // ms per character, slight variation
+
+    function typeNext() {
+      if (i < cmd.length) {
+        termInput.value += cmd[i];
+        i++;
+        setTimeout(typeNext, speed + (Math.random() - 0.5) * 25);
+      } else {
+        // Brief pause then execute
+        setTimeout(() => {
+          executeCommand(termInput.value);
+          termInput.value = '';
+          isTyping = false;
+          if (btn) btn.classList.remove('typing');
+        }, 150);
+      }
+    }
+    typeNext();
+  }
+
+  // Attach to all GUI buttons
+  document.querySelectorAll('.gui-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const cmd = btn.dataset.cmd;
+      if (cmd) typeAndExecute(cmd, btn);
+    });
+  });
+
+  /* ==============================
+     UTILITY FUNCTIONS
+     ============================== */
+  async function fetchJSON(url, options = {}) {
+    const resp = await fetch(url, options);
+    return resp.json();
+  }
+
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function decodeHTML(html) {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+  }
+
+})();
+</script>
+</body>
+</html>

@@ -483,10 +483,12 @@ html, body {
   border-radius: 8px;
   border: 2px solid var(--page-accent);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 2s ease;
 }
-.avatar-container:hover .avatar-real {
+.avatar-container:hover .avatar-real,
+.avatar-real.revealed {
   opacity: 0.55;
+  transition: opacity 0.4s ease;
 }
 .avatar-caption {
   font-family: 'Fira Code', monospace;
@@ -1384,35 +1386,58 @@ html, body {
   let hoverCandidatePos = null; // screen pos of candidate
   const HOVER_DWELL_MS = 400;  // ms of hover to trigger
 
-  // Touch-and-hold for mobile
-  let touchHoldTimer = null;
-  let touchPos = { x: -9999, y: -9999 };
-  // Document-level touch handlers (canvas is behind overlays)
+  // === MOBILE BLACKHOLE SYSTEM ===
+  // Hold → blackhole opens, pulls in stars, grows with each eaten star
+  // Release → everything snaps back like nothing happened
+  let blackhole = null; // { x, y, startTime, eatenStars: Set, size, active, releaseTime }
+  const BH_PULL_RADIUS = 350;    // gravitational reach (px)
+  const BH_EAT_RADIUS = 15;      // stars within this get consumed
+  const BH_BASE_SIZE = 8;        // starting visual radius
+  const BH_GROW_PER_EAT = 2.5;   // size increase per eaten star
+  const BH_MAX_SIZE = 80;        // max visual radius
+  const BH_SNAPBACK_MS = 800;    // ms for stars to spring back after release
+
+  // Per-star pull offsets (displaced positions during blackhole)
+  let bhStarOffsets = {}; // starId → { ox, oy } current offset from true pos
+
   document.addEventListener('touchstart', e => {
     const t = e.touches[0];
     const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    touchPos.x = t.clientX / z;
-    touchPos.y = t.clientY / z;
-    mouseX = touchPos.x;
-    mouseY = touchPos.y;
-    clearTimeout(touchHoldTimer);
-    touchHoldTimer = setTimeout(() => {
-      if (hoverCandidate) {
-        hoverCandidateStart = performance.now() - HOVER_DWELL_MS - 1;
-      }
-    }, 600);
+    const tx = t.clientX / z;
+    const ty = t.clientY / z;
+    mouseX = tx; mouseY = ty;
+
+    // Create blackhole at touch point
+    blackhole = {
+      x: tx, y: ty,
+      startTime: performance.now(),
+      eatenStars: new Set(),
+      size: BH_BASE_SIZE,
+      active: true,
+      releaseTime: null
+    };
+    bhStarOffsets = {};
   }, { passive: true });
+
   document.addEventListener('touchmove', e => {
     const t = e.touches[0];
     const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
     mouseX = t.clientX / z;
     mouseY = t.clientY / z;
-    clearTimeout(touchHoldTimer);
+    // Blackhole follows finger
+    if (blackhole && blackhole.active) {
+      blackhole.x = mouseX;
+      blackhole.y = mouseY;
+    }
   }, { passive: true });
+
   document.addEventListener('touchend', () => {
-    clearTimeout(touchHoldTimer);
     mouseX = -9999; mouseY = -9999;
-    hoverCandidate = null;
+    // Release the blackhole — stars snap back
+    if (blackhole && blackhole.active) {
+      blackhole.active = false;
+      blackhole.releaseTime = performance.now();
+    }
   }, { passive: true });
 
   function renderStarMap(time) {
@@ -1528,14 +1553,128 @@ html, body {
       }
     }
 
+    // === BLACKHOLE PHYSICS ===
+    let bhAlpha = 0; // overall blackhole visual intensity
+    if (blackhole) {
+      const bhAge = now - blackhole.startTime;
+
+      if (blackhole.active) {
+        // Actively pulling — grow intensity
+        bhAlpha = Math.min(1, bhAge / 400);
+        const dt = 1 / 60; // approximate frame delta in seconds
+
+        for (const { star, pos } of starPositions) {
+          if (blackhole.eatenStars.has(star.id)) continue;
+
+          // Distance from star's TRUE position to blackhole center
+          const off = bhStarOffsets[star.id] || { ox: 0, oy: 0 };
+          const sx = pos[0] + off.ox;
+          const sy = pos[1] + off.oy;
+          const dx = blackhole.x - sx;
+          const dy = blackhole.y - sy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < BH_EAT_RADIUS) {
+            // EATEN — star consumed
+            blackhole.eatenStars.add(star.id);
+            blackhole.size = Math.min(BH_MAX_SIZE, blackhole.size + BH_GROW_PER_EAT);
+          } else if (dist < BH_PULL_RADIUS) {
+            // Gravitational pull — stronger when closer, quadratic falloff
+            const force = Math.pow(1 - dist / BH_PULL_RADIUS, 1.5);
+            const pullSpeed = 200 * force * dt;
+            const nx = dx / dist, ny = dy / dist;
+            if (!bhStarOffsets[star.id]) bhStarOffsets[star.id] = { ox: 0, oy: 0 };
+            bhStarOffsets[star.id].ox += nx * pullSpeed;
+            bhStarOffsets[star.id].oy += ny * pullSpeed;
+          }
+        }
+      } else if (blackhole.releaseTime) {
+        // Released — stars snapping back
+        const snapProgress = Math.min(1, (now - blackhole.releaseTime) / BH_SNAPBACK_MS);
+        const ease = 1 - Math.pow(1 - snapProgress, 3); // ease-out cubic
+        bhAlpha = 1 - ease;
+
+        // Lerp all offsets back to zero
+        for (const id in bhStarOffsets) {
+          bhStarOffsets[id].ox *= (1 - ease * 0.15);
+          bhStarOffsets[id].oy *= (1 - ease * 0.15);
+        }
+
+        // Clear when done
+        if (snapProgress >= 1) {
+          blackhole = null;
+          bhStarOffsets = {};
+        }
+      }
+    }
+
+    // Draw blackhole visual (dark vortex with purple accretion disk)
+    if (blackhole && bhAlpha > 0.01) {
+      const bh = blackhole;
+      const sz = bh.size;
+      const pulse = 1 + 0.08 * Math.sin(t * 8);
+
+      // Dark void center
+      const voidGrad = ctx.createRadialGradient(bh.x, bh.y, 0, bh.x, bh.y, sz * pulse);
+      voidGrad.addColorStop(0, `rgba(0, 0, 0, ${bhAlpha})`);
+      voidGrad.addColorStop(0.7, `rgba(5, 0, 15, ${bhAlpha * 0.9})`);
+      voidGrad.addColorStop(1, `rgba(20, 0, 40, 0)`);
+      ctx.fillStyle = voidGrad;
+      ctx.beginPath();
+      ctx.arc(bh.x, bh.y, sz * pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Purple accretion ring
+      const ringR = sz * 1.6 * pulse;
+      const ringGrad = ctx.createRadialGradient(bh.x, bh.y, sz * 0.8, bh.x, bh.y, ringR);
+      ringGrad.addColorStop(0, `rgba(120, 40, 200, 0)`);
+      ringGrad.addColorStop(0.4, `rgba(160, 60, 255, ${bhAlpha * 0.25})`);
+      ringGrad.addColorStop(0.7, `rgba(200, 100, 255, ${bhAlpha * 0.15})`);
+      ringGrad.addColorStop(1, `rgba(140, 60, 200, 0)`);
+      ctx.fillStyle = ringGrad;
+      ctx.beginPath();
+      ctx.arc(bh.x, bh.y, ringR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Spinning streaks (eaten star count drives intensity)
+      const streaks = Math.min(bh.eatenStars.size, 12);
+      for (let i = 0; i < streaks; i++) {
+        const angle = (i / streaks) * Math.PI * 2 + t * 3;
+        const sr = sz * (1.2 + 0.4 * Math.sin(t * 5 + i));
+        const ex = bh.x + Math.cos(angle) * sr;
+        const ey = bh.y + Math.sin(angle) * sr;
+        ctx.beginPath();
+        ctx.moveTo(bh.x + Math.cos(angle) * sz * 0.3, bh.y + Math.sin(angle) * sz * 0.3);
+        ctx.lineTo(ex, ey);
+        ctx.strokeStyle = `rgba(180, 120, 255, ${bhAlpha * 0.3})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Score text — eaten count
+      if (bh.eatenStars.size > 0) {
+        ctx.font = 'bold 10px "Fira Code", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = `rgba(200, 160, 255, ${bhAlpha * 0.8})`;
+        ctx.fillText(`${bh.eatenStars.size} consumed`, bh.x, bh.y + sz + 16);
+      }
+    }
+
     // Clear faded infections
     if (rainbowInfection._fadeStart && now - rainbowInfection._fadeStart > 2000) {
       rainbowInfection = {};
     }
 
-    for (const { star, pos } of starPositions) {
+    for (const { star, pos: origPos } of starPositions) {
+      // Skip eaten stars (while blackhole is active)
+      if (blackhole && blackhole.eatenStars.has(star.id) && blackhole.active) continue;
+
       const r = radiusScale(star.mag);
       if (r <= 0) continue;
+
+      // Apply blackhole offset to position
+      const bhOff = bhStarOffsets[star.id];
+      const pos = bhOff ? [origPos[0] + bhOff.ox, origPos[1] + bhOff.oy] : origPos;
 
       // Twinkle effect
       const twinkle = 0.65 + 0.35 * Math.sin(t * star.twinkleSpeed + star.twinklePhase);
@@ -2813,6 +2952,25 @@ html, body {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
     return txt.value;
+  }
+
+  /* ==============================
+     AVATAR REVEAL — click/tap "Artist's" to show real face
+     ============================== */
+  const avatarHint = document.querySelector('.avatar-hint');
+  if (avatarHint) {
+    let avatarTimeout = null;
+    avatarHint.addEventListener('click', (e) => {
+      e.preventDefault();
+      const realImg = document.querySelector('.avatar-real');
+      if (!realImg) return;
+      clearTimeout(avatarTimeout);
+      realImg.classList.add('revealed');
+      // Show for 3 seconds, then fade out over 2s (handled by CSS transition)
+      avatarTimeout = setTimeout(() => {
+        realImg.classList.remove('revealed');
+      }, 3000);
+    });
   }
 
 })();

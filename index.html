@@ -1400,16 +1400,19 @@ html, body {
   // Per-star pull offsets (displaced positions during blackhole)
   let bhStarOffsets = {}; // starId → { ox, oy } current offset from true pos
 
-  document.addEventListener('touchstart', e => {
-    const t = e.touches[0];
-    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    const tx = t.clientX / z;
-    const ty = t.clientY / z;
-    mouseX = tx; mouseY = ty;
+  // === TAP vs HOLD DETECTION ===
+  // Tap (< 400ms) → rainbow infection at nearest star
+  // Hold (>= 400ms) → blackhole
+  const HOLD_THRESHOLD = 400; // ms
+  let pressStart = 0;
+  let pressPos = { x: 0, y: 0 };
+  let holdTimer = null;
+  let isHolding = false;
+  let tapInfectionPos = null; // set on tap to trigger rainbow in render loop
 
-    // Create blackhole at touch point
+  function startBlackhole(x, y) {
     blackhole = {
-      x: tx, y: ty,
+      x, y,
       startTime: performance.now(),
       eatenStars: new Set(),
       size: BH_BASE_SIZE,
@@ -1417,27 +1420,90 @@ html, body {
       releaseTime: null
     };
     bhStarOffsets = {};
-  }, { passive: true });
+  }
 
+  function onPressStart(x, y) {
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    const px = x / z, py = y / z;
+    pressStart = performance.now();
+    pressPos = { x: px, y: py };
+    isHolding = false;
+
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => {
+      // Held long enough → blackhole
+      isHolding = true;
+      startBlackhole(px, py);
+    }, HOLD_THRESHOLD);
+  }
+
+  function onPressMove(x, y) {
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    const px = x / z, py = y / z;
+
+    // If moved too far, cancel hold detection
+    const dx = px - pressPos.x, dy = py - pressPos.y;
+    if (Math.sqrt(dx * dx + dy * dy) > 20) {
+      clearTimeout(holdTimer);
+    }
+
+    if (blackhole && blackhole.active) {
+      blackhole.x = px; blackhole.y = py;
+    }
+  }
+
+  function onPressEnd() {
+    clearTimeout(holdTimer);
+    if (isHolding) {
+      // Was a hold → release blackhole
+      if (blackhole && blackhole.active) {
+        blackhole.active = false;
+        blackhole.releaseTime = performance.now();
+      }
+      isHolding = false;
+    } else {
+      // Was a tap → trigger rainbow infection at press position
+      tapInfectionPos = { x: pressPos.x, y: pressPos.y };
+      mouseX = pressPos.x; mouseY = pressPos.y;
+      // Keep mouseX/Y set briefly so render loop can detect nearest star
+      setTimeout(() => {
+        if (tapInfectionPos === null) { mouseX = -9999; mouseY = -9999; }
+      }, 100);
+    }
+  }
+
+  // Desktop: mouse
+  document.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    onPressStart(e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', e => {
+    if (pressStart > 0 && isHolding) {
+      onPressMove(e.clientX, e.clientY);
+    }
+  });
+  document.addEventListener('mouseup', e => {
+    if (e.button !== 0) return;
+    onPressEnd();
+    pressStart = 0;
+  });
+
+  // Mobile: touch
+  document.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    mouseX = t.clientX; mouseY = t.clientY;
+    onPressStart(t.clientX, t.clientY);
+  }, { passive: true });
   document.addEventListener('touchmove', e => {
     const t = e.touches[0];
     const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    mouseX = t.clientX / z;
-    mouseY = t.clientY / z;
-    // Blackhole follows finger
-    if (blackhole && blackhole.active) {
-      blackhole.x = mouseX;
-      blackhole.y = mouseY;
-    }
+    mouseX = t.clientX / z; mouseY = t.clientY / z;
+    onPressMove(t.clientX, t.clientY);
   }, { passive: true });
-
   document.addEventListener('touchend', () => {
-    mouseX = -9999; mouseY = -9999;
-    // Release the blackhole — stars snap back
-    if (blackhole && blackhole.active) {
-      blackhole.active = false;
-      blackhole.releaseTime = performance.now();
-    }
+    onPressEnd();
+    // Don't reset mouseX/Y immediately — let render loop detect tap target
+    setTimeout(() => { mouseX = -9999; mouseY = -9999; }, 150);
   }, { passive: true });
 
   function renderStarMap(time) {
@@ -1492,64 +1558,72 @@ html, body {
       starPositions.push({ star, pos });
     }
 
-    // Detect hover on important stars (mag < 1.5, within 25px)
-    let nearestImportant = null;
-    let nearestPos = null;
-    for (const { star, pos } of starPositions) {
-      if (star.mag >= 1.5 || !star.label) continue;
-      const dx = pos[0] - mouseX, dy = pos[1] - mouseY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 25) { nearestImportant = star; nearestPos = pos; break; }
-    }
-
-    // Dwell-time hover: mouse must stay near star for HOVER_DWELL_MS
-    if (nearestImportant) {
-      if (hoverCandidate !== nearestImportant) {
-        // New candidate — start dwell timer
-        hoverCandidate = nearestImportant;
-        hoverCandidateStart = now;
-        hoverCandidatePos = nearestPos;
+    // Detect hover on important stars (mag < 1.5, within 25px) — rainbow infection
+    // Only when blackhole is NOT active
+    if (!blackhole || !blackhole.active) {
+      let nearestImportant = null;
+      let nearestPos = null;
+      for (const { star, pos } of starPositions) {
+        if (star.mag >= 1.5 || !star.label) continue;
+        const dx = pos[0] - mouseX, dy = pos[1] - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 25) { nearestImportant = star; nearestPos = pos; break; }
       }
-      // Check if dwell time met
-      if (!hoveredStar && now - hoverCandidateStart >= HOVER_DWELL_MS) {
-        // Trigger infection
-        hoveredStar = hoverCandidate;
-        infectionSource = hoverCandidatePos;
-        rainbowInfection = {};
-        rainbowInfection[hoveredStar.id] = { startTime: now, generation: 0 };
-      } else if (hoveredStar && hoveredStar === nearestImportant) {
-        // Already active, update source pos (star moves with rotation)
-        infectionSource = nearestPos;
-      } else if (hoveredStar && hoveredStar !== nearestImportant) {
-        // Switched to a different star — fade out old, start new dwell
-        rainbowInfection._fadeStart = now;
-        hoveredStar = null;
-        hoverCandidate = nearestImportant;
-        hoverCandidateStart = now;
-        hoverCandidatePos = nearestPos;
+
+      // Dwell-time hover (desktop) or instant via tapInfection flag (mobile)
+      if (nearestImportant) {
+        if (hoverCandidate !== nearestImportant) {
+          hoverCandidate = nearestImportant;
+          hoverCandidateStart = now;
+          hoverCandidatePos = nearestPos;
+        }
+        const dwellMet = now - hoverCandidateStart >= HOVER_DWELL_MS;
+        const tapTriggered = tapInfectionPos !== null;
+
+        if (!hoveredStar && (dwellMet || tapTriggered)) {
+          hoveredStar = tapTriggered ? hoverCandidate : hoverCandidate;
+          infectionSource = hoverCandidatePos;
+          rainbowInfection = {};
+          rainbowInfection[hoveredStar.id] = { startTime: now, generation: 0 };
+          tapInfectionPos = null; // consumed
+        } else if (hoveredStar && hoveredStar === nearestImportant) {
+          infectionSource = nearestPos;
+        } else if (hoveredStar && hoveredStar !== nearestImportant) {
+          rainbowInfection._fadeStart = now;
+          hoveredStar = null;
+          hoverCandidate = nearestImportant;
+          hoverCandidateStart = now;
+          hoverCandidatePos = nearestPos;
+        }
+      } else {
+        hoverCandidate = null;
+        if (tapInfectionPos) tapInfectionPos = null; // tap missed a star
+        if (hoveredStar) {
+          rainbowInfection._fadeStart = now;
+          hoveredStar = null;
+        }
+      }
+
+      // Spread infection
+      if (hoveredStar && infectionSource) {
+        for (const { star, pos } of starPositions) {
+          if (rainbowInfection[star.id]) continue;
+          const dx = pos[0] - infectionSource[0], dy = pos[1] - infectionSource[1];
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > INFECTION_MAX_DIST) continue;
+          const arrivalTime = (dist / INFECTION_SPEED) * 1000;
+          const elapsed = now - rainbowInfection[hoveredStar.id].startTime;
+          if (elapsed >= arrivalTime) {
+            rainbowInfection[star.id] = { startTime: now, generation: dist };
+          }
+        }
       }
     } else {
-      hoverCandidate = null;
+      // Blackhole active — clear any rainbow state
       if (hoveredStar) {
-        // Mouse left — fade out
-        rainbowInfection._fadeStart = now;
+        rainbowInfection = {};
         hoveredStar = null;
-      }
-    }
-
-    // Spread infection to nearby stars
-    if (hoveredStar && infectionSource) {
-      for (const { star, pos } of starPositions) {
-        if (rainbowInfection[star.id]) continue;
-        const dx = pos[0] - infectionSource[0], dy = pos[1] - infectionSource[1];
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > INFECTION_MAX_DIST) continue;
-        // Infection reaches this star based on distance / speed
-        const arrivalTime = (dist / INFECTION_SPEED) * 1000;
-        const elapsed = now - rainbowInfection[hoveredStar.id].startTime;
-        if (elapsed >= arrivalTime) {
-          rainbowInfection[star.id] = { startTime: now, generation: dist };
-        }
+        hoverCandidate = null;
       }
     }
 
@@ -2268,10 +2342,10 @@ html, body {
 
   // Welcome message
   function printWelcome() {
-    print('<span style="display:block;text-align:center">════════════════════════════════════</span>', 'system');
-    print('<span style="display:block;text-align:center">HITCHHIKER\'S GUIDE TO SETH TIMMONS</span>', 'system');
-    print('<span style="display:block;text-align:center">TERMINAL v42.0</span>', 'system');
-    print('<span style="display:block;text-align:center">════════════════════════════════════</span>', 'system');
+    print('════════════════════════════════════', 'system');
+    print('HITCHHIKER\'S GUIDE TO SETH TIMMONS', 'system');
+    print('TERMINAL v42.0', 'system');
+    print('════════════════════════════════════', 'system');
     print('');
     print('Entry loaded: <span style="color:#66ffcc">TIMMONS, SETH</span>', 'highlight');
     print('Classification: Surprisingly Competent');

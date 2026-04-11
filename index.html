@@ -119,7 +119,7 @@ html, body {
 
 #refresh-btn {
   position: fixed;
-  bottom: 8px; right: 8px;
+  bottom: 40px; right: 8px;
   z-index: 500;
   background: rgba(10, 10, 10, 0.7);
   border: 1px solid #444;
@@ -1392,9 +1392,9 @@ html, body {
   let blackhole = null; // { x, y, startTime, eatenStars: Set, size, active, releaseTime }
   const BH_PULL_RADIUS = 350;    // gravitational reach (px)
   const BH_EAT_RADIUS = 15;      // stars within this get consumed
-  const BH_BASE_SIZE = 8;        // starting visual radius
-  const BH_GROW_PER_EAT = 2.5;   // size increase per eaten star
-  const BH_MAX_SIZE = 80;        // max visual radius
+  const BH_BASE_SIZE = 3;        // starting visual radius (tiny dot)
+  const BH_GROW_PER_EAT = 0.8;   // size increase per eaten star (slow growth)
+  const BH_MAX_SIZE = 60;        // max visual radius
   const BH_SNAPBACK_MS = 800;    // ms for stars to spring back after release
 
   // Per-star pull offsets (displaced positions during blackhole)

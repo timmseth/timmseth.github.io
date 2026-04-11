@@ -65,6 +65,29 @@ html, body {
   opacity: 1;
 }
 
+#bg-toggle-mobile {
+  display: none;
+  position: fixed;
+  top: 8px; left: 8px;
+  z-index: 500;
+  background: rgba(10, 10, 10, 0.7);
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #888;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.55rem;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+#bg-toggle-mobile:active {
+  color: #f0e030;
+  border-color: #f0e030;
+}
+#bg-toggle-mobile.active {
+  color: #0ff;
+  border-color: #0ff;
+}
+
 #bg-bar-toggle {
   display: flex; align-items: center; justify-content: center;
   gap: 8px; padding: 6px 0;
@@ -681,17 +704,79 @@ html, body {
    11. RESPONSIVE
    ============================== */
 @media (max-width: 600px) {
-  .page { padding: 20px 20px 55px 25px; }
-  .skill-grid { grid-template-columns: 1fr; }
-  .terminal-body { padding: 15px 12px 8px 12px; }
-  .terminal-input-row { padding: 6px 12px 10px 12px; }
-  #nav-bar { bottom: 8px; gap: 6px; }
-  #arrow-left { left: 4px; }
-  #arrow-right { right: 4px; }
-  .side-arrow { padding: 14px 6px; font-size: 1.1rem; }
+  html { zoom: 1; }
+
+  :root {
+    --book-width: 96vw;
+    --book-height: 88vh;
+  }
+
+  /* Cover / terminal fills mobile screen */
+  #cover {
+    width: 96vw; height: 92vh;
+    border-width: 2px;
+    border-radius: 6px;
+  }
+  #cover-terminal {
+    zoom: 1;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  /* Thinner scroll borders on mobile */
+  .cover-border-top, .cover-border-bottom,
+  .book-border-top, .book-border-bottom {
+    height: 18px;
+  }
+
+  /* Terminal text sizes */
+  .cover-header { padding: 8px 12px 6px 12px; }
+  .cover-title { font-size: 1rem; }
+  .terminal-body {
+    padding: 10px 12px 6px 12px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .terminal-input-row {
+    padding: 6px 12px 8px 12px;
+    font-size: 0.75rem;
+  }
+  #terminal-input { font-size: 0.75rem; }
+
+  /* BG bar toggle */
+  #bg-bar-toggle { font-size: 0.55rem; padding: 4px 0; }
+
+  /* GUI panel mobile */
+  #gui-toggle { font-size: 0.55rem; padding: 4px 0; }
   .gui-inner { padding: 6px 10px 10px 10px; }
-  .gui-btn { font-size: 0.7rem; padding: 3px 7px; }
-  .gui-section-label { font-size: 0.55rem; }
+  .gui-btn { font-size: 0.65rem; padding: 3px 7px; }
+  .gui-section-label { font-size: 0.5rem; margin: 6px 0 4px 0; }
+  .gui-buttons { gap: 4px; }
+  #gui-panel.open { max-height: 200px; }
+
+  /* Book pages */
+  .page {
+    padding: 24px 16px 30px 20px;
+    font-size: 0.82rem;
+  }
+  .entry-title { font-size: 1.2rem; }
+  .entry-subtitle { font-size: 0.6rem; }
+  .page-header { font-size: 0.5rem; }
+  .entry-body { font-size: 0.78rem; line-height: 1.6; }
+  .skill-grid { grid-template-columns: 1fr; }
+  .avatar-container { float: none; margin: 0 auto 12px auto; width: 110px; }
+
+  /* Nav */
+  #nav-bar { bottom: 6px; gap: 6px; font-size: 0.6rem; }
+  #arrow-left { left: 2px; }
+  #arrow-right { right: 2px; }
+  .side-arrow { padding: 12px 5px; font-size: 1rem; border-radius: 4px; }
+
+  /* Mobile BG toggle button */
+  #bg-toggle-mobile { display: block; }
+
+  /* Footer */
+  #site-footer { font-size: 0.45rem; padding: 2px 0; }
 }
 </style>
 </head>
@@ -702,6 +787,7 @@ html, body {
      ============================== -->
 <canvas id="starfield"></canvas>
 <canvas id="cybergrid" class="active"></canvas>
+<button id="bg-toggle-mobile" title="Toggle background">BG &#8635;</button>
 
 <!-- ==============================
      LOADING SCREEN
@@ -1294,8 +1380,9 @@ html, body {
   let cgMouse = { x: -9999, y: -9999 };
   let cgNodes = [];
   let cgEdges = [];
-  const CG_SPACING = 50;
-  const CG_CONNECT_DIST = 75;
+  const isMobileDevice = window.innerWidth <= 600;
+  const CG_SPACING = isMobileDevice ? 90 : 50;
+  const CG_CONNECT_DIST = isMobileDevice ? 130 : 75;
   const CG_PULL_RADIUS = 250;
   const CG_PULL_STRENGTH = 0.035;
   const CG_RETURN_STRENGTH = 0.03;
@@ -1347,6 +1434,13 @@ html, body {
     cgMouse.y = e.clientY / z;
   });
   document.addEventListener('mouseleave', () => { cgMouse.x = -9999; cgMouse.y = -9999; });
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    cgMouse.x = t.clientX / z;
+    cgMouse.y = t.clientY / z;
+  }, { passive: true });
+  document.addEventListener('touchend', () => { cgMouse.x = -9999; cgMouse.y = -9999; });
 
   function cgRender(time) {
     if (!cgActive) { requestAnimationFrame(cgRender); return; }
@@ -1436,6 +1530,14 @@ html, body {
     requestAnimationFrame(cgRender);
   }
   requestAnimationFrame(cgRender);
+
+  // Mobile BG toggle button
+  const bgMobileBtn = document.getElementById('bg-toggle-mobile');
+  bgMobileBtn.addEventListener('click', () => {
+    cgActive = !cgActive;
+    document.getElementById('cybergrid').classList.toggle('active', cgActive);
+    bgMobileBtn.classList.toggle('active', cgActive);
+  });
 
   // BG bar toggle — hides terminal content, makes cover transparent so BG shows
   const bgBarToggle = document.getElementById('bg-bar-toggle');

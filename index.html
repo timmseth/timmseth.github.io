@@ -148,11 +148,11 @@ section:last-of-type{border-bottom:0}
 .about .wrap{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:56px;align-items:start}
 .about p{margin-bottom:1.1em;max-width:62ch}
 .about p:last-child{margin-bottom:0}
-.about .photo{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
-.about .photo img{width:120px;height:120px;border-radius:8px;object-fit:cover;display:block}
-.about .photo dl{font-size:.92rem}
-.about .photo dt{color:var(--muted);font-size:.78rem;margin-top:8px}
-.about .photo dt:first-child{margin-top:0}
+.about .photo{display:flex;flex-direction:column;gap:18px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
+.about .photo img{width:100%;height:auto;aspect-ratio:1;border-radius:8px;object-fit:cover;display:block}
+.about .photo dl{font-size:.95rem;display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.about .photo dl div{min-width:0}
+.about .photo dt{color:var(--muted);font-size:.78rem}
 .about .photo dd{color:var(--ink)}
 .principles{margin-top:28px;border-top:1px solid var(--line)}
 .principles li{list-style:none;padding:14px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:28px 1fr;gap:12px;font-size:.95rem}
@@ -343,13 +343,13 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
     </div>
 
     <aside class="photo" aria-label="Quick facts">
-      <img src="assets/profile.jpg" alt="Illustrated portrait of Seth Timmons looking surprised" width="120" height="120">
+      <img src="assets/profile.jpg" alt="Illustrated portrait of Seth Timmons looking surprised" width="600" height="600">
       <dl>
-        <dt>Currently</dt><dd>Workflow &amp; Integrations Engineer, DualEnroll</dd>
-        <dt>Based</dt><dd>Southeast Idaho · remote</dd>
-        <dt>Domains</dt><dd>EdTech, higher-ed ERP, SMS/commerce</dd>
-        <dt>Off hours</dt><dd>Tabletop worldbuilding, Raspberry Pi, Android games, modding anything that holds still</dd>
-        <dt>Towel</dt><dd>Always knows where it is</dd>
+        <div><dt>Currently</dt><dd>Workflow &amp; Integrations Engineer, DualEnroll</dd></div>
+        <div><dt>Based</dt><dd>Southeast Idaho · remote</dd></div>
+        <div><dt>Domains</dt><dd>EdTech, higher-ed ERP, SMS/commerce</dd></div>
+        <div><dt>Towel</dt><dd>Always knows where it is</dd></div>
+        <div style="grid-column:1/-1"><dt>Off hours</dt><dd>Tabletop worldbuilding, Raspberry Pi, Android games, modding anything that holds still</dd></div>
       </dl>
     </aside>
   </div>

@@ -8,15 +8,42 @@
 <meta property="og:title" content="Seth Timmons — API Integrations Engineer">
 <meta property="og:description" content="Integration pipelines, ERP connectors, MCP tooling, and a few products of my own.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#F4F6F8">
+<meta name="theme-color" content="#0D1822">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}
+</script>
 <style>
 /* ---------- tokens ---------- */
 :root{
+  --bg:#0D1822;
+  --bg-2:#152331;
+  --card:#121F2A;
+  --ink:#E8EEF3;
+  --slate:#B3C3D1;
+  --muted:#7F919F;
+  --line:#243542;
+  --copper:#D9904F;
+  --copper-soft:rgba(217,144,79,.18);
+  --ok:#62C48A;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 24px 48px -32px rgba(0,0,0,.7);
+  --feat-bg:#E9EDF1;
+  --feat-ink:#10212E;
+  --feat-muted:#4F6274;
+  --feat-tag-bg:#D3DBE3;
+  --feat-tag-ink:#35506B;
+  --feat-link:#8A4A1C;
+  color-scheme:dark;
+  --w:1120px;
+  --font:"Bricolage Grotesque",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+html[data-theme="light"]{
   --bg:#F4F6F8;
   --bg-2:#E9EDF1;
+  --card:#FFFFFF;
   --ink:#10212E;
   --slate:#35506B;
   --muted:#5F6E7B;
@@ -24,10 +51,16 @@
   --copper:#B4652A;
   --copper-soft:#F1E2D6;
   --ok:#2F7D4F;
-  --w:1120px;
-  --font:"Bricolage Grotesque",system-ui,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --shadow:0 1px 0 rgba(16,33,46,.04),0 24px 48px -32px rgba(16,33,46,.25);
+  --feat-bg:#10212E;
+  --feat-ink:#F4F6F8;
+  --feat-muted:#B9C6D2;
+  --feat-tag-bg:#223446;
+  --feat-tag-ink:#D5DFE8;
+  --feat-link:#F0C9A8;
+  color-scheme:light;
 }
+body{transition:background .25s,color .25s}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -51,7 +84,10 @@ header.top .wrap{display:flex;align-items:center;justify-content:space-between;h
 nav.primary{display:flex;gap:6px}
 nav.primary a{font-family:var(--mono);font-size:.78rem;color:var(--slate);padding:6px 10px;border-radius:4px}
 nav.primary a:hover{background:var(--bg-2);color:var(--ink)}
-@media (max-width:720px){nav.primary{display:none}}
+.hdr-right{display:flex;align-items:center;gap:14px}
+#theme{font-family:var(--mono);font-size:.74rem;color:var(--copper);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:border-color .15s,background .15s}
+#theme:hover{border-color:var(--copper);background:var(--copper-soft)}
+@media (max-width:720px){nav.primary{display:none}#theme{font-size:.68rem;padding:5px 10px}}
 
 /* ---------- hero ---------- */
 .hero{padding:72px 0 56px;border-bottom:1px solid var(--line)}
@@ -64,6 +100,7 @@ nav.primary a:hover{background:var(--bg-2);color:var(--ink)}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:6px;font-weight:600;border:1px solid var(--ink);transition:transform .15s,background .15s}
 .btn.primary{background:var(--ink);color:var(--bg)}
+.btn.primary:hover{color:var(--bg)}
 .btn.primary:hover{background:var(--slate);border-color:var(--slate)}
 .btn.ghost:hover{background:var(--bg-2)}
 .btn:active{transform:translateY(1px)}
@@ -71,7 +108,7 @@ nav.primary a:hover{background:var(--bg-2);color:var(--ink)}
 .hero-meta b{display:block;color:var(--ink);font-size:1.25rem;font-weight:600;letter-spacing:-.01em}
 
 /* sequence diagram */
-.seq{position:relative;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 18px 14px;box-shadow:0 1px 0 rgba(16,33,46,.04),0 24px 48px -32px rgba(16,33,46,.25)}
+.seq{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 18px 14px;box-shadow:var(--shadow)}
 .seq .bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--muted)}
 .seq .bar .pill{font-family:var(--mono);font-size:.72rem;padding:3px 8px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
 .seq svg{width:100%;height:auto;display:block;overflow:visible}
@@ -85,6 +122,7 @@ nav.primary a:hover{background:var(--bg-2);color:var(--ink)}
 .seq .msg .lbl{fill:var(--ink)}
 .seq .msg .code{fill:var(--ok);font-weight:500}
 .seq .act{fill:var(--copper-soft);stroke:var(--copper);stroke-width:1}
+.seq .arr-slate{fill:var(--slate)}.seq .arr-ok{fill:var(--ok)}
 .seq .msg,.seq .act{opacity:0;animation:step 14s infinite}
 .seq .cursor{fill:var(--copper)}
 .seq .cursor circle{animation:none}
@@ -110,7 +148,7 @@ section:last-of-type{border-bottom:0}
 .about .wrap{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:56px;align-items:start}
 .about p{margin-bottom:1.1em;max-width:62ch}
 .about p:last-child{margin-bottom:0}
-.about .photo{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+.about .photo{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
 .about .photo img{width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;filter:saturate(.9)}
 .about .photo dl{font-size:.92rem}
 .about .photo dt{color:var(--muted);font-size:.78rem;margin-top:8px}
@@ -145,11 +183,11 @@ section:last-of-type{border-bottom:0}
 
 /* projects */
 .projects-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
-.proj{background:#fff;border:1px solid var(--line);border-radius:10px;padding:26px;display:flex;flex-direction:column;gap:12px;grid-column:span 4;position:relative;transition:border-color .2s}
+.proj{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px;display:flex;flex-direction:column;gap:12px;grid-column:span 4;position:relative;transition:border-color .2s}
 .proj:hover{border-color:var(--slate)}
-.proj.featured{grid-column:span 8;background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.proj.featured .meta,.proj.featured p{color:#B9C6D2}
-.proj.featured .tag{background:#223446;color:#D5DFE8}
+.proj.featured{grid-column:span 8;background:var(--feat-bg);color:var(--feat-ink);border-color:var(--feat-bg)}
+.proj.featured .meta,.proj.featured p{color:var(--feat-muted)}
+.proj.featured .tag{background:var(--feat-tag-bg);color:var(--feat-tag-ink)}
 .proj.wide{grid-column:span 6}
 .proj .meta{font-family:var(--mono);font-size:.74rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
 .proj h3{font-size:1.3rem}
@@ -157,7 +195,7 @@ section:last-of-type{border-bottom:0}
 .proj p{color:var(--slate);font-size:.97rem;max-width:60ch}
 .proj .links{margin-top:auto;padding-top:8px;display:flex;gap:16px;font-size:.9rem;font-weight:600}
 .proj .links a{border-bottom:1px solid currentColor}
-.proj.featured .links a{color:#F0C9A8}
+.proj.featured .links a{color:var(--feat-link)}
 .schema{font-family:var(--mono);font-size:.74rem;line-height:1.6;background:#0B1822;border:1px solid #223446;border-radius:6px;padding:14px 16px;color:#B9C6D2;overflow:auto;margin-top:6px}
 .schema .k{color:#F0C9A8}.schema .s{color:#9FD3B2}.schema .n{color:#C9B6F2}.schema .c{color:#5F7A90}
 .feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
@@ -165,7 +203,7 @@ section:last-of-type{border-bottom:0}
 @media (max-width:720px){.proj,.proj.featured,.proj.wide{grid-column:span 12}.feat-grid{grid-template-columns:1fr}}
 
 /* stack */
-.stack{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.stack{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
 .stack div{padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
 .stack div:nth-child(3n){border-right:0}
 .stack div:nth-last-child(-n+3){border-bottom:0}
@@ -186,7 +224,7 @@ section:last-of-type{border-bottom:0}
 .contact .wrap{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:48px;align-items:center}
 .contact h2{font-size:clamp(2rem,4vw,3rem);max-width:16ch}
 .contact p{color:var(--slate);margin-top:14px;max-width:48ch}
-.contact-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 22px}
+.contact-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 22px}
 .contact-card a{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);font-weight:600}
 .contact-card a:last-child{border-bottom:0}
 .contact-card a small{font-family:var(--mono);font-size:.76rem;color:var(--muted);font-weight:400}
@@ -203,13 +241,16 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#top"><span class="dot" aria-hidden="true"></span>Seth Timmons</a>
-    <nav class="primary" aria-label="Sections">
-      <a href="#about">/about</a>
-      <a href="#experience">/experience</a>
-      <a href="#projects">/projects</a>
-      <a href="#stack">/stack</a>
-      <a href="#contact">/contact</a>
-    </nav>
+    <div class="hdr-right">
+      <nav class="primary" aria-label="Sections">
+        <a href="#about">/about</a>
+        <a href="#experience">/experience</a>
+        <a href="#projects">/projects</a>
+        <a href="#stack">/stack</a>
+        <a href="#contact">/contact</a>
+      </nav>
+      <button id="theme" type="button" aria-pressed="false" title="Toggle light / dark mode">Let There Be Light</button>
+    </div>
   </div>
 </header>
 
@@ -230,18 +271,19 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <div><b>13+ yrs</b>integration &amp; infrastructure</div>
         <div><b>2</b>conference talks</div>
         <div><b>Remote</b>Idaho, Mountain time</div>
+        <div><b>Vi</b>editor of choice, :wq</div>
       </div>
     </div>
 
     <figure class="seq" aria-label="Animated sequence diagram of a typical integration: a client request handled by Seth's integration layer, which queries the ERP, calls a third-party API, and returns a response.">
       <div class="bar">
         <span class="pill">sequence · enrollment sync</span>
-        <span class="pill">replaying</span>
+        <span class="pill">replaying · mostly harmless</span>
       </div>
       <svg viewBox="0 0 560 336" role="img" aria-hidden="true">
         <defs>
-          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#35506B"/></marker>
-          <marker id="arr-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2F7D4F"/></marker>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arr-slate"/></marker>
+          <marker id="arr-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arr-ok"/></marker>
         </defs>
         <!-- lanes at x = 60, 200, 360, 500 -->
         <g class="lanes">
@@ -263,7 +305,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <rect class="act s1" x="195" y="60" width="10" height="252" rx="2"/>
 
         <g class="msg s1"><line x1="60" y1="70" x2="192" y2="70"/><text class="lbl" x="130" y="63" text-anchor="middle">POST /enrollments</text></g>
-        <g class="msg s2"><rect x="210" y="86" width="196" height="18" rx="3" fill="#F4F6F8"/><text x="216" y="99" class="lbl">validate · map ids · idempotency key</text></g>
+        <g class="msg s2"><rect x="210" y="86" width="196" height="18" rx="3" fill="var(--card)"/><text x="216" y="99" class="lbl">validate · map ids · idempotency key</text></g>
         <g class="msg s3"><line x1="205" y1="128" x2="357" y2="128"/><text class="lbl" x="282" y="121" text-anchor="middle">GET /students/{id}</text></g>
         <g class="msg resp s4"><line x1="357" y1="156" x2="208" y2="156"/><text x="282" y="149" text-anchor="middle"><tspan class="code">200</tspan> student record</text></g>
         <g class="msg s5"><line x1="205" y1="186" x2="357" y2="186"/><text class="lbl" x="282" y="179" text-anchor="middle">POST /registrations</text></g>
@@ -306,7 +348,8 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <dt>Currently</dt><dd>Workflow &amp; Integrations Engineer, DualEnroll</dd>
         <dt>Based</dt><dd>Southeast Idaho · remote</dd>
         <dt>Domains</dt><dd>EdTech, higher-ed ERP, SMS/commerce</dd>
-        <dt>Off hours</dt><dd>Tabletop worldbuilding, Raspberry Pi, Android games</dd>
+        <dt>Off hours</dt><dd>Tabletop worldbuilding, Raspberry Pi, Android games, modding anything that holds still</dd>
+        <dt>Towel</dt><dd>Always knows where it is</dd>
       </dl>
     </aside>
   </div>
@@ -465,14 +508,14 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 
       <article class="proj wide">
         <div class="meta"><span>personal · 2025–</span><span>Android · sideload</span></div>
-        <h3>Android applications for sideload</h3>
+        <h3>Android Development</h3>
         <p>An automated, AI-assisted Android game development pipeline: an idea goes in as a prompt, a build bot produces a versioned, signed APK, and each iteration ships to a shared drive on command. Output so far is music- and gaming-focused — rhythm games driven by the player's own library, CYPHER, a freestyle-rap trainer that pairs random words with beats pulled from open APIs, a fractal generator, and a growing shelf of small arcade and idle games.</p>
         <div class="tags"><span class="tag">Kotlin · PWA</span><span class="tag">GitHub Actions</span><span class="tag">Claude API</span><span class="tag">Spotify · YouTube APIs</span></div>
       </article>
 
       <article class="proj wide">
         <div class="meta"><span>personal · 2026</span><span>Minecraft · Cyberpunk 2077</span></div>
-        <h3>Personal game mods</h3>
+        <h3>Game Mod Development</h3>
         <p>WorldBound: a Minecraft world type that generates the real Earth at 1:3 scale in true proportion, from the GEBCO 2026 global bathymetry and elevation grid and Köppen-Geiger V3 climate maps for biomes. Swim the Mariana Trench and climb Everest — which meant raising the world height to 4,064 blocks — on a globe that wraps east to west. Also: a Shadow-of-Mordor-style nemesis system imported into Cyberpunk 2077, and Borderlands 2's gun modifiers and mechanics rebuilt in Minecraft with a mix-and-match gun workbench.</p>
         <div class="tags"><span class="tag">Fabric · Java</span><span class="tag">GEBCO · Köppen-Geiger</span><span class="tag">worldgen</span><span class="tag">Cyberpunk 2077</span></div>
       </article>
@@ -488,14 +531,14 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
       <h2>Stack</h2>
       <span class="endpoint"><span class="m">GET</span>/stack <span class="c">200</span></span>
     </div>
-    <p class="sec-intro">Lead items are what I'd reach for first on a new integration; the rest I've shipped with in production.</p>
+    <p class="sec-intro">Lead items are what I reach for first on a new integration. The rest I've shipped with in production — or at 3 a.m., which counts double.</p>
     <div class="stack">
-      <div><h3>APIs &amp; protocols</h3><ul><li class="lead">REST · OpenAPI</li><li class="lead">Webhooks &amp; event-driven sync</li><li>GraphQL</li><li>MCP (Model Context Protocol)</li><li>Postman · Playwright</li></ul></div>
-      <div><h3>Enterprise systems</h3><ul><li class="lead">Ellucian Ethos data model</li><li>Ellucian Colleague · Banner</li><li>Ellucian Experience</li><li>Terminal Four · WordPress</li><li>Twilio</li></ul></div>
-      <div><h3>Languages</h3><ul><li class="lead">Python</li><li class="lead">PHP</li><li>Ruby on Rails</li><li>JavaScript / HTML / CSS</li><li>Bash · Perl</li></ul></div>
-      <div><h3>Data</h3><ul><li class="lead">MySQL</li><li>Oracle · PL/SQL</li><li>Schema &amp; mapping design</li><li>Data visualisation (D3)</li></ul></div>
-      <div><h3>Platforms &amp; ops</h3><ul><li class="lead">Linux (RHEL, Ubuntu, Fedora)</li><li>Heroku</li><li>Git · GitHub</li><li>Nagios XI</li><li>Raspberry Pi</li></ul></div>
-      <div><h3>AI-assisted engineering</h3><ul><li class="lead">Claude / Anthropic API</li><li class="lead">MCP server design &amp; QA</li><li>Context engineering &amp; prompt design</li><li>Claude skills &amp; custom commands</li><li>TensorFlow (hobby)</li></ul></div>
+      <div><h3>Integration &amp; APIs</h3><ul><li class="lead">REST &amp; OpenAPI contract design</li><li class="lead">Webhooks, retries, idempotency keys</li><li>GraphQL</li><li>Rails API conventions (and their snake_case opinions)</li><li>Postman collections as living docs</li></ul></div>
+      <div><h3>AI tooling &amp; agents</h3><ul><li class="lead">MCP server design, scoped tokens &amp; QA</li><li class="lead">Claude Code, Agent SDK &amp; custom skills</li><li>Context engineering: CLAUDE.md, plans, handoffs</li><li>Agent-run build pipelines (idea → signed APK)</li><li>Prompt-driven WorldEdit (natural-language Minecraft)</li></ul></div>
+      <div><h3>Higher-ed &amp; EdTech systems</h3><ul><li class="lead">Ellucian Ethos data model &amp; connectors</li><li>Ellucian Colleague · Banner · Experience</li><li>DualEnroll workflow configuration</li><li>Terminal Four · WordPress</li><li>Audit-grade asset &amp; plant tracking</li></ul></div>
+      <div><h3>Languages &amp; runtimes</h3><ul><li class="lead">Python</li><li class="lead">PHP · Ruby on Rails</li><li>Kotlin / Compose (Android)</li><li>Java (Fabric mods)</li><li>JavaScript · Bash · Perl</li></ul></div>
+      <div><h3>Data &amp; messaging</h3><ul><li class="lead">MySQL · Oracle / PL-SQL</li><li>Schema mapping &amp; enum reconciliation</li><li>Twilio SMS, A2P 10DLC campaigns</li><li>Geodata pipelines (GEBCO, Köppen-Geiger)</li><li>D3 visualisation</li></ul></div>
+      <div><h3>Platforms &amp; delivery</h3><ul><li class="lead">Linux (RHEL · Ubuntu · WSL)</li><li class="lead">GitHub Actions CI/CD</li><li>Cloudflare Pages / Workers · Heroku</li><li>Playwright end-to-end tests</li><li>Nagios · Raspberry Pi · Vi (:wq)</li></ul></div>
     </div>
   </div>
 </section>
@@ -526,11 +569,12 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
     <div>
       <span class="endpoint"><span class="m">POST</span>/contact <span class="c">202 Accepted</span></span>
       <h2 style="margin-top:12px">Have two systems that need to agree?</h2>
-      <p>I'm open to integration engineering roles and to talking shop about ERP connectors, EdTech workflows, MCP tooling, or how to version a fictional universe. Email is the fastest path.</p>
+      <p>I'm open to integration engineering roles and to talking shop about ERP connectors, EdTech workflows, MCP tooling, or how to version a fictional universe. Email is the fastest path; replies usually land within a day unless I'm at the bottom of the Mariana Trench, which is a real place I can go now.</p>
     </div>
     <div class="contact-card">
       <a href="mailto:timmons.seth@gmail.com">Email <small>timmons.seth@gmail.com</small></a>
       <a href="https://github.com/timmseth" rel="noopener">GitHub <small>github.com/timmseth</small></a>
+      <a href="https://ko-fi.com/timmseth" rel="noopener">Ko-fi <small>ko-fi.com/timmseth</small></a>
     </div>
   </div>
 </section>
@@ -539,13 +583,29 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 
 <footer>
   <div class="wrap">
-    <span>© <span id="yr">2026</span> Seth Timmons · Pocatello, Idaho</span>
+    <span>© <span id="yr">2026</span> Seth Timmons · Pocatello, Idaho · panic factor: low (usually)</span>
     <span>Hand-built, no framework. <a href="https://github.com/timmseth/timmseth.github.io" rel="noopener">Source on GitHub</a> · <a href="Hitchhikers%20Guide/">The Hitchhiker's Guide to Seth Timmons</a></span>
   </div>
 </footer>
 
 <script>
 document.getElementById('yr').textContent = new Date().getFullYear();
+(function(){
+  var btn=document.getElementById('theme'), root=document.documentElement;
+  function paint(){
+    var light=root.getAttribute('data-theme')==='light';
+    btn.textContent=light?'The Light! It Burns Us!':'Let There Be Light';
+    btn.setAttribute('aria-pressed',light?'true':'false');
+    document.querySelector('meta[name=theme-color]').setAttribute('content',light?'#F4F6F8':'#0D1822');
+  }
+  btn.addEventListener('click',function(){
+    var light=root.getAttribute('data-theme')==='light';
+    if(light)root.removeAttribute('data-theme');else root.setAttribute('data-theme','light');
+    try{localStorage.setItem('theme',light?'dark':'light');}catch(e){}
+    paint();
+  });
+  paint();
+})();
 </script>
 </body>
 </html>

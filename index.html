@@ -105,8 +105,11 @@ nav.primary a:hover{background:var(--bg-2);color:var(--ink)}
 .btn.primary:hover{background:var(--slate);border-color:var(--slate)}
 .btn.ghost:hover{background:var(--bg-2)}
 .btn:active{transform:translateY(1px)}
-.hero-meta{display:flex;gap:22px;margin-top:30px;color:var(--muted);font-size:.9rem}
-.hero-meta b{display:block;color:var(--ink);font-size:1.25rem;font-weight:600;letter-spacing:-.01em}
+.hero-meta{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px;padding-top:28px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+.hero-meta>div{position:relative;padding-left:18px}
+.hero-meta>div::before{content:"";position:absolute;left:0;top:10px;width:8px;height:8px;border-radius:50%;background:var(--copper);box-shadow:0 0 0 3px var(--copper-soft)}
+@media (max-width:720px){.hero-meta{grid-template-columns:1fr 1fr;gap:20px 16px}}
+.hero-meta b{display:block;color:var(--ink);font-size:1.3rem;font-weight:600;letter-spacing:-.01em;line-height:1.2;margin-bottom:2px}
 
 /* sequence diagram */
 .seq{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 18px 14px;box-shadow:var(--shadow)}
@@ -296,12 +299,6 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <a class="btn primary" href="#projects">See the work</a>
         <a class="btn ghost" href="#contact">Get in touch</a>
       </div>
-      <div class="hero-meta">
-        <div><b>13+ yrs</b>integration &amp; infrastructure</div>
-        <div><b>2</b>conference talks</div>
-        <div><b>Remote</b>Idaho, Mountain time</div>
-        <div><b>Vi</b>editor of choice, :wq</div>
-      </div>
     </div>
 
     <figure class="seq" aria-label="Animated sequence diagram of a typical integration: a client request handled by Seth's integration layer, which queries the ERP, calls a third-party API, and returns a response.">
@@ -349,6 +346,12 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <span>result: <b>consistent on both sides</b></span>
       </figcaption>
     </figure>
+      <div class="hero-meta">
+        <div><b>13+ yrs</b>integration &amp; infrastructure</div>
+        <div><b>2</b>conference talks</div>
+        <div><b>Remote</b>Idaho · Mountain time</div>
+        <div><b>Vi</b>editor of choice, :wq</div>
+      </div>
   </div>
 </div>
 

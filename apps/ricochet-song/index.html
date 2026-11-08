@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Ricochet Song</title>
+<!-- The whole game runs from this folder inside the app's WebView (file:///android_asset/).
+     index.html = layout and styles      themes.js = the looks (colour themes)
+     game.js    = rules, play, drawing   studio.js = courses, the board editor, sharing and import
+     levels.js  = the 20 built-in boards assets.js = art and sound from the Chequered Ink pack (base64)
+     font.css   = the title font -->
+<script>
+// If the game cannot start, say why on screen instead of showing an empty list. Once the scripts have
+// finished loading (window.__booted) errors only go to the log. The Android side calls __fail too.
+window.__fail=function(msg){if(window.__booted)return;var e=document.getElementById('err');if(e){e.hidden=false;e.textContent='Ricochet Song could not start: '+msg;document.documentElement.classList.add('ready')}};
+window.onerror=function(m,src,line){window.__fail(m+' ('+String(src||'').split('/').pop()+':'+(line||0)+')')};
+// The page stays hidden until the saved look is applied, so a light look never flashes navy first.
+try{var b=localStorage.getItem('ricochet-song-bg');if(b)document.documentElement.style.setProperty('--deep',b)}catch(e){}
+</script>
+<link rel="stylesheet" href="font.css">
+<style>
+/* Colours: every colour below is a variable. These defaults are the Midnight look in dark mode;
+   applyLook() in game.js overwrites them from themes.js. */
+:root{color-scheme:dark;--night:#0b1330;--deep:#080d22;--glow:#1a2c6b;--panel:#152352;--panel2:#1e3170;--line:#30468c;--text:#edf2ff;--mute:#9fb0dc;--faint:#5f72ad;
+  --accent:#f7c12e;--accentHi:#ffd451;--accentLo:#f1ae10;--accentShadow:#8a5a00;--accentInk:#2a1d00;--accentText:#f7c12e;--titleShadow:#7a4a00;
+  --sky:#66bdf0;--rose:#f06a80;--mint:#6fd694;--strip:#0a1230cc;--scrim:#060a1cd9;--hearOn:#3a3410;--off:grayscale(1) brightness(.45);
+  --display:"CI GameDev","Trebuchet MS",sans-serif;--body:Roboto,"Segoe UI Variable Text","Segoe UI","Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{height:100%;background:var(--deep)}
+body{margin:0;color:var(--text);font:15px/1.4 var(--body);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
+img{-webkit-user-drag:none;pointer-events:none}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+input,textarea{font:inherit;color:var(--text);background:var(--deep);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;-webkit-user-select:text;user-select:text;outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:none;height:84px;font-size:12px;line-height:1.3;word-break:break-all}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* layout: one phone-shaped column, one screen showing at a time */
+#app{height:100%;max-width:460px;margin:0 auto;background:radial-gradient(120% 70% at 50% 0%,var(--glow) 0%,var(--night) 60%,var(--deep) 100%);position:relative;display:flex;flex-direction:column;overflow:hidden;visibility:hidden}
+html.ready #app{visibility:visible}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column}
+.ib{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;flex:none;padding:0}
+svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ib:active,.pill:active,.btn:active,.chip:active{transform:translateY(1px)}
+.ib[aria-pressed="false"]{color:var(--mute)}
+.ib:disabled,.btn:disabled{opacity:.4}
+.pill{height:42px;border-radius:21px;border:0;padding:0 16px 0 12px;display:flex;align-items:center;gap:7px;background:linear-gradient(var(--accentHi),var(--accentLo));color:var(--accentInk);font-weight:700;box-shadow:0 3px 0 var(--accentShadow);flex:none}
+.chip{height:34px;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:0 9px;display:flex;align-items:center;gap:5px;font-weight:600;font-size:13px;flex:none;font-variant-numeric:tabular-nums}
+.chip svg{width:16px;height:16px}
+.grow{flex:1}
+.btn{flex:1;min-height:46px;border-radius:13px;border:1px solid var(--line);background:var(--panel2);font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;padding:4px 10px}
+.btn.pri{background:linear-gradient(var(--accentHi),var(--accentLo));border:0;color:var(--accentInk);box-shadow:0 3px 0 var(--accentShadow)}
+.btn.bad{color:var(--rose)}
+.row{display:flex;gap:8px;width:100%}
+.note{margin:0;color:var(--mute);font-size:13px}
+
+/* home */
+#home{overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:12px 16px 30px;gap:18px}
+#home>*{flex:none}
+#bar{display:flex;align-items:center;gap:8px}
+#home h1{font:400 52px/.9 var(--display);margin:0;color:var(--accentText);letter-spacing:1px;text-shadow:0 3px 0 var(--titleShadow)}
+#home .sub{margin:0;color:var(--mute);max-width:36ch}
+#keys{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+#keys button{display:block;width:100%;height:0;padding:0 0 100%;border:0;border-radius:10px;background:center/cover;position:relative;transition:transform .08s;box-shadow:inset 0 0 0 1px #00000024}
+#keys button:active{transform:scale(.88)}
+#keys span{position:absolute;left:0;right:0;bottom:3px;text-align:center;font:700 11px var(--body);color:#0009}
+#ear{display:flex;gap:12px;align-items:center;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+#ear b{display:block}
+#earSub{display:block;color:var(--mute);font-size:12.5px}
+.sw{flex:none;width:44px;height:26px;border-radius:13px;background:var(--deep);border:1px solid var(--line);position:relative}
+.sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--mute);transition:left .15s,background .15s}
+[aria-pressed="true"]>.sw i{left:20px;background:var(--accent)}
+.set h2{font:400 22px/1 var(--display);margin:0 0 2px;letter-spacing:.5px}
+.set p{margin:0 0 8px;color:var(--mute);font-size:13px}
+.lv{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px 9px 9px;margin-bottom:6px}
+.lv:active{border-color:var(--sky)}
+.lv>b{width:34px;height:34px;border-radius:9px;background:var(--panel2);display:grid;place-items:center;font:400 20px var(--display);color:var(--accentText)}
+.lv .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;display:block}
+.lv .by{display:block;color:var(--mute);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv .dots{display:flex;gap:3px;margin-top:3px;overflow:hidden;max-height:9px;flex-wrap:wrap}
+.lv .dots i{width:9px;height:9px;border-radius:3px;flex:none;box-shadow:inset 0 0 0 1px #00000022}
+.lv .draft{color:var(--rose);font-size:12.5px}
+.stars{display:flex;gap:1px}
+.stars img{width:20px;height:20px}
+.stars img.off{filter:var(--off)}
+#total,.count{font-variant-numeric:tabular-nums;color:var(--mute);font-size:13px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+#total img,.count img{width:16px;height:16px}
+#ver{margin:0;text-align:center;color:var(--faint);font-size:12px}
+#err{margin:0;padding:10px 12px;border:1px solid var(--rose);border-radius:10px;color:var(--rose);font-size:13px;-webkit-user-select:text;user-select:text}
+
+/* studio and course screens */
+.top{display:flex;align-items:center;gap:10px;padding:10px 12px 6px}
+.ttl{flex:1;min-width:0}
+.ttl small{display:block;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl span{display:block;font:400 23px/1 var(--display);letter-spacing:.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:8px 16px 30px;display:flex;flex-direction:column;gap:12px}
+.body>*{flex:none}
+.tr{display:grid;grid-template-columns:1fr 42px 42px;gap:6px;align-items:stretch;margin-bottom:6px}
+.tr .lv{margin:0}
+.tr .ib{height:auto;min-height:42px}
+.best{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:13px}
+.best b{color:var(--text);font-variant-numeric:tabular-nums}
+.link{background:none;border:0;color:var(--mute);text-decoration:underline;padding:6px;font-size:13px;align-self:center}
+
+/* play */
+#strip{margin:0 12px;background:var(--strip);border:1px solid var(--line);border-radius:12px;display:flex;align-items:stretch;gap:0;overflow:hidden}
+#hear{border:0;border-right:1px solid var(--line);background:var(--panel2);padding:0 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;color:var(--text);min-width:58px}
+#hear svg{fill:var(--accentText);stroke:none}
+#hear.on{background:var(--hearOn)}
+#roll{flex:1;min-width:0;height:64px;display:block;touch-action:none}
+#boardWrap{flex:1;min-height:0;position:relative;margin:8px 12px 0}
+#board{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;touch-action:manipulation;display:block}
+#play.edit #board{touch-action:none}
+#tip{margin:6px 14px 0;min-height:38px;font-size:13.5px;color:var(--mute);display:flex;align-items:center;justify-content:center;text-align:center}
+#tip.bad{color:var(--rose)} #tip.good{color:var(--mint)}
+#ctl,#edCtl{display:flex;gap:10px;align-items:center;padding:8px 12px 12px}
+#go,#test{flex:1;height:54px;border-radius:16px;border:0;background:linear-gradient(var(--accentHi),var(--accentLo));color:var(--accentInk);font:400 28px/1 var(--display);letter-spacing:1px;box-shadow:0 4px 0 var(--accentShadow);position:relative}
+#go:active,#test:active{transform:translateY(3px);box-shadow:0 1px 0 var(--accentShadow)}
+#go.run,#test.run{background:linear-gradient(#8fd2f7,#4aa3de);box-shadow:0 4px 0 #1d5b8a;color:#06223a}
+#go small{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:600 11px var(--body);letter-spacing:0;opacity:.7}
+.lab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--mute)}
+.lab .ib{width:48px;height:44px}
+#clock{font:600 15px var(--body);font-variant-numeric:tabular-nums;color:var(--accentText);display:flex;align-items:center;gap:4px;flex:none}
+#clock svg{width:17px;height:17px}
+
+/* editor: an options row for the selected piece, the palette, then undo / test / start position */
+#play.edit #ctl{display:none}
+#ed{display:flex;flex-direction:column}
+#opts{height:60px;margin:0 12px;display:flex;align-items:center;gap:8px;color:var(--mute);font-size:13px;overflow:hidden}
+#opts>span.t{flex:1;min-width:0}
+#opts .ib{width:44px;height:44px}
+#opts .btn{flex:none;min-height:44px;font-size:13.5px}
+#pal{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;padding:0 12px}
+#pal button{height:46px;min-width:0;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:0;display:grid;place-items:center;touch-action:none}
+#pal canvas{width:min(32px,100%);height:auto;aspect-ratio:1/1;display:block;pointer-events:none}
+#pal button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;background:var(--panel2)}
+#ed.start #pal{display:none}
+#ed.start #opts{height:106px}
+#ed.busy #pal{opacity:.35;pointer-events:none}
+#edCtl .lab .ib{width:46px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+.seg button{flex:1;border:0;border-right:1px solid var(--line);background:var(--panel);padding:0 11px;min-height:40px;font-size:13.5px;font-weight:600;white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accentInk)}
+.step{display:flex;align-items:center;gap:4px;flex:none;color:var(--text)}
+.step button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:20px;line-height:1;padding:0}
+.step b{min-width:30px;text-align:center;font-variant-numeric:tabular-nums}
+.pianoWrap{flex:1;min-width:0;height:60px;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;scrollbar-width:none}
+.pianoWrap::-webkit-scrollbar{display:none}
+.piano{position:relative;height:60px}
+.piano button{position:absolute;border:1px solid #0006;padding:0;font:700 11px var(--body);color:#000a;display:flex;align-items:flex-end;justify-content:center}
+.piano .w{top:2px;height:56px;border-radius:0 0 7px 7px;padding-bottom:4px}
+.piano .k{top:2px;height:32px;border-radius:0 0 5px 5px;background:#1b1b22;color:#fff;z-index:1;font-size:9px;padding-bottom:3px;border-color:#000}
+.piano .on{outline:3px solid var(--accentText);outline-offset:-3px;z-index:2}
+.piano .k.on{outline-color:#fff}
+#ghost{position:absolute;left:0;top:0;width:64px;height:64px;pointer-events:none;z-index:9;opacity:.92}
+
+/* result card, sheets, toast */
+#card,#sheet{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--scrim);z-index:5;animation:fade .2s both}
+#card{display:grid;place-items:center;padding:20px}
+#card>div{width:100%;max-width:330px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px 18px 16px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;animation:pop .35s cubic-bezier(.2,1.4,.4,1) both}
+#word{height:54px}
+#card h3,#sheet h3{margin:0;font:400 24px/1.1 var(--display)}
+#card p{margin:0;color:var(--mute);font-size:13.5px}
+#cstars{display:flex;gap:6px}
+#cstars img{width:54px;height:54px;transform:scale(0);opacity:.25}
+#cstars img.in{animation:star .4s cubic-bezier(.2,1.6,.4,1) both;opacity:1}
+#cstars img.out{transform:scale(.8);filter:var(--off)}
+#sheet{z-index:7;display:flex;flex-direction:column;justify-content:flex-end}
+#sheet.up{justify-content:flex-start}
+#sheet .box{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:14px 16px 18px;max-height:88%;overflow-y:auto;display:flex;flex-direction:column;gap:12px;animation:rise .22s ease-out both}
+#sheet.up .box{border-radius:0 0 20px 20px;animation-name:drop}
+#sheet .sh{display:flex;align-items:center;gap:10px}
+#sheet .sh h3{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#shB{display:flex;flex-direction:column;gap:12px}
+#shB label,#shB .fld{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--mute)}
+#shB .fld .seg button{padding:0 4px;font-size:13px;color:var(--text)}
+#shB .line{display:flex;align-items:center;gap:10px;justify-content:space-between;color:var(--text)}
+.menu{display:flex;flex-direction:column;gap:6px}
+.menu .btn{justify-content:flex-start;padding:4px 14px;flex:none}
+.looks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.looks button{border:2px solid var(--line);border-radius:12px;padding:8px 6px;background:var(--panel2);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.looks button[aria-pressed="true"]{border-color:var(--accentText)}
+.looks i{width:100%;height:30px;border-radius:7px;display:block;border:1px solid #0003}
+.found{background:var(--deep);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.found b{display:block}
+.found span{color:var(--mute);font-size:12.5px}
+#toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);background:var(--text);color:var(--deep);padding:9px 16px;border-radius:20px;font-size:13.5px;font-weight:600;z-index:10;max-width:86%;text-align:center;animation:fade .2s both;pointer-events:none}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+@keyframes rise{from{transform:translateY(30px);opacity:0}}
+@keyframes drop{from{transform:translateY(-30px);opacity:0}}
+@keyframes star{from{transform:scale(0) rotate(-40deg)}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}#cstars img.in{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <section class="screen" id="home">
+    <p id="err" hidden></p>
+    <div id="bar">
+      <button class="pill" id="studioBtn"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19zM14 7l3 3"/></svg>Studio</button>
+      <span class="grow"></span>
+      <span id="total"></span>
+      <button class="ib" id="lookBtn" aria-label="Look: dark mode and colours"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+      <button class="ib" id="snd1" aria-label="Sound" aria-pressed="true"></button>
+    </div>
+    <h1>Ricochet<br>Song</h1>
+    <p class="sub">Turn the paddles so the ball rings each pad on its beat. Some routes cross themselves, some rewire the board, and some need a turn mid-roll.</p>
+    <div id="keys"></div>
+    <button id="ear" aria-pressed="false"><span class="sw"><i></i></span><span><b>Ear mode</b><span id="earSub"></span></span></button>
+    <div id="sets"></div>
+    <div id="hc"></div>
+    <p id="ver"></p>
+  </section>
+
+  <section class="screen" id="studio" hidden>
+    <div class="top">
+      <button class="ib" id="stBack" aria-label="Back to the tunes"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="ttl"><small>Make, share and play courses</small><span>Studio</span></div>
+    </div>
+    <div class="body" id="stBody"></div>
+  </section>
+
+  <section class="screen" id="course" hidden>
+    <div class="top">
+      <button class="ib" id="coBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="ttl"><small id="coBy"></small><span id="coName"></span></div>
+      <button class="ib" id="coMenu" aria-label="Course options"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></button>
+    </div>
+    <div class="body" id="coBody"></div>
+  </section>
+
+  <section class="screen" id="play" hidden>
+    <div class="top" id="top">
+      <button class="ib" id="back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="ttl" id="ttl"><small id="lvNo"></small><span id="lvName"></span></div>
+      <span id="clock" hidden></span>
+      <button class="chip" id="sizeBtn" hidden aria-label="Board name, size and speed"></button>
+      <button class="ib" id="snd2" aria-label="Sound" aria-pressed="true"></button>
+    </div>
+    <div id="strip">
+      <button id="hear" aria-label="Hear the tune"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Tune</button>
+      <canvas id="roll"></canvas>
+    </div>
+    <div id="boardWrap"><canvas id="board"></canvas></div>
+    <div id="tip"></div>
+    <div id="ctl">
+      <span class="lab"><button class="ib" id="reset" aria-label="Reset the paddles"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button><span id="resetLab">Reset</span></span>
+      <button id="go"><span id="goTxt">LAUNCH</span><small id="tries"></small></button>
+      <span class="lab"><button class="ib" id="hint" aria-label="Hint: fix one paddle"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.3 1 2.1h5c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></button>Hint</span>
+    </div>
+    <div id="ed" hidden>
+      <div id="opts"></div>
+      <div id="pal"></div>
+      <div id="edCtl">
+        <span class="lab"><button class="ib" id="undo" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M4 9h10a5 5 0 0 1 0 10H8M4 9l4-4M4 9l4 4"/></svg></button>Undo</span>
+        <span class="lab"><button class="ib" id="redo" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="M20 9H10a5 5 0 0 0 0 10h6M20 9l-4-4M20 9l-4 4"/></svg></button>Redo</span>
+        <button id="test"><span id="testTxt">TEST</span></button>
+        <span class="lab"><button class="ib" id="viewBtn" aria-label="Switch between the solved board and the start position"><svg viewBox="0 0 24 24"><path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/></svg></button><span id="viewLab">Start</span></span>
+      </div>
+    </div>
+  </section>
+
+  <div id="card" hidden><div>
+    <img id="word" alt="">
+    <div id="cstars"></div>
+    <h3 id="ch"></h3><p id="cp"></p>
+    <div class="row"><button class="btn" id="again">Play again</button><button class="btn pri" id="next">Next tune</button></div>
+  </div></div>
+
+  <div id="sheet" hidden><div class="box">
+    <div class="sh"><h3 id="shT"></h3><button class="ib" id="shX" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div id="shB"></div>
+  </div></div>
+  <canvas id="ghost" hidden></canvas>
+  <div id="toast" hidden></div>
+</div>
+<script src="assets.js"></script>
+<script src="levels.js"></script>
+<script src="themes.js"></script>
+<script src="game.js"></script>
+<script src="studio.js"></script>
+</body>
+</html>

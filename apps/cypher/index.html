@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0E0C0A">
+<title>CYPHER — Freestyle Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E0C0A;
+  --ink2:#171310;
+  --line:#2A241D;
+  --paper:#F2E9D8;
+  --muted:#8A8071;
+  --amber:#E8A33D;
+  --red:#C8502A;
+  --disp:'Anton','Arial Narrow',Impact,sans-serif;
+  --ui:'Space Grotesk',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--ink);color:var(--paper);font-family:var(--ui);
+  display:flex;flex-direction:column;min-height:100dvh;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* header */
+header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid var(--line)}
+.logo{font-family:var(--disp);font-size:26px;letter-spacing:.06em;color:var(--paper)}
+.logo span{color:var(--amber)}
+.tag{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em}
+
+/* stage */
+#stage{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:18px;min-height:34dvh;position:relative;overflow:hidden}
+#word{
+  font-family:var(--disp);text-transform:uppercase;line-height:.95;text-align:center;
+  letter-spacing:.02em;word-break:break-word;max-width:100%;
+  transition:opacity .18s ease,transform .18s ease;
+}
+#word.drop{opacity:0;transform:translateY(-14px)}
+#stage .hint{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+#advZone{position:absolute;top:0;right:0;bottom:0;width:24%;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:var(--line);font-size:30px;user-select:none}
+#advZone:active{color:var(--amber)}
+#word.said{color:var(--amber)}
+#history{display:flex;gap:14px;justify-content:center;padding:0 18px 6px;min-height:18px}
+#history span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* sweep bar — the signature */
+#sweepwrap{height:4px;background:var(--ink2);margin:0 18px;border-radius:2px;overflow:hidden}
+#sweep{height:100%;width:0%;background:linear-gradient(90deg,var(--amber),var(--red));border-radius:2px}
+#sweep.run{transition:width linear}
+@media (prefers-reduced-motion:reduce){
+  #word{transition:none}
+  #sweep.run{transition:none}
+}
+
+/* stats strip */
+#stats{display:flex;justify-content:space-between;padding:10px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+#stats b{color:var(--amber);font-weight:600}
+
+/* controls */
+#controls{padding:6px 18px 14px;display:grid;gap:14px;border-top:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:12px}
+.lbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);min-width:72px}
+input[type=range]{flex:1;accent-color:var(--amber);height:28px}
+.val{font-family:var(--mono);font-size:13px;color:var(--paper);min-width:42px;text-align:right}
+.pills{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+.pill{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  padding:7px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);
+}
+.pill.on{border-color:var(--amber);color:var(--amber)}
+#startBtn{
+  font-family:var(--disp);font-size:22px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--amber);color:var(--ink);border-radius:10px;padding:14px;width:100%;
+}
+#startBtn.live{background:var(--red);color:var(--paper)}
+
+/* beat deck */
+#deck{border-top:1px solid var(--line);padding:12px 18px 18px}
+.deckhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.deckhead .lbl{min-width:0}
+.tabs{display:flex;gap:6px}
+.tab{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.tab.on{border-color:var(--paper);color:var(--paper)}
+.panel{display:none;gap:12px}
+.panel.on{display:grid}
+#beatBtn{
+  font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--amber);color:var(--amber);border-radius:8px;padding:12px;width:100%;
+}
+#beatBtn.live{background:var(--amber);color:var(--ink)}
+input[type=file]{display:none}
+.filebtn,#ytGo{
+  font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px dashed var(--line);color:var(--muted);border-radius:8px;padding:11px;text-align:center;width:100%;display:block
+}
+.filebtn.loaded{border-style:solid;border-color:var(--amber);color:var(--amber)}
+#ytRow{display:flex;gap:8px}
+#ytUrl{
+  flex:1;background:var(--ink2);border:1px solid var(--line);border-radius:8px;color:var(--paper);
+  font-family:var(--mono);font-size:12px;padding:11px;min-width:0
+}
+#ytGo{width:auto;padding:11px 14px;border-style:solid}
+#ytFrame{width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:8px;display:none;background:#000}
+.note{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.04em}
+#netdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin-right:5px;vertical-align:1px}
+#netdot.ok{background:#5a9e4d}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CY<span>PH</span>ER</div>
+  <div class="tag">freestyle trainer</div>
+</header>
+
+<div id="stage">
+  <div id="word" style="font-size:64px">READY</div>
+  <button id="advZone" aria-label="Next word">›</button>
+  <div class="hint">tap word = said it · right edge = next</div>
+</div>
+<div id="history"></div>
+<div id="sweepwrap"><div id="sweep"></div></div>
+
+<div id="stats">
+  <div>bars <b id="barCount">0</b></div>
+  <div><span id="netdot"></span><span id="netlbl">offline list</span></div>
+  <div>pool <b id="poolCount">0</b></div>
+</div>
+
+<div id="controls">
+  <div class="row">
+    <span class="lbl">Interval</span>
+    <input type="range" id="ivl" min="1" max="30" step="1" value="6" aria-label="Seconds per word">
+    <span class="val" id="ivlVal">6s</span>
+  </div>
+  <div class="row">
+    <span class="lbl">Words</span>
+    <div class="pills" id="diff">
+      <button class="pill on" data-d="any">Any</button>
+      <button class="pill" data-d="short">Short</button>
+      <button class="pill" data-d="med">Medium</button>
+      <button class="pill" data-d="long">Long</button>
+    </div>
+  </div>
+  <button id="startBtn">Start session</button>
+</div>
+
+<div id="deck">
+  <div class="deckhead">
+    <span class="lbl">Beat deck</span>
+    <div class="tabs">
+      <button class="tab on" data-t="synth">Built-in</button>
+      <button class="tab" data-t="file">My audio</button>
+      <button class="tab" data-t="yt">YouTube</button>
+    </div>
+  </div>
+
+  <div class="panel on" data-p="synth">
+    <div class="row">
+      <span class="lbl">BPM</span>
+      <input type="range" id="bpm" min="70" max="110" step="1" value="88" aria-label="Beats per minute">
+      <span class="val" id="bpmVal">88</span>
+    </div>
+    <button id="beatBtn">▶ Play beat</button>
+    <div class="note">Boom-bap loop synthesized on-device. Works offline.</div>
+  </div>
+
+  <div class="panel" data-p="file">
+    <label class="filebtn" id="fileLbl" for="fileIn">Choose audio file…</label>
+    <input type="file" id="fileIn" accept="audio/*">
+    <div class="note">Loops your track. Stays on your phone.</div>
+  </div>
+
+  <div class="panel" data-p="yt">
+    <div id="ytRow">
+      <input id="ytUrl" type="url" inputmode="url" placeholder="Paste a YouTube beat link…" aria-label="YouTube URL">
+      <button id="ytGo">Load</button>
+    </div>
+    <iframe id="ytFrame" title="YouTube beat" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div class="note">Needs internet. Use the player's own controls.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------- tiny persistence (safe everywhere) ---------- */
+const store={
+  get(k,d){try{const v=localStorage.getItem("cypher:"+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("cypher:"+k,JSON.stringify(v))}catch(e){}}
+};
+
+/* ---------- bundled offline word list ---------- */
+const SEED=("anchor blaze canyon dagger empire falcon granite hollow ignite jackpot kingdom lantern marble "+
+"needle outlaw phantom quiver rocket shadow temple uproar velvet wander zenith asphalt bounce circuit "+
+"diamond echo fortune gravity horizon island jungle karma legend midnight nomad ocean pressure quartz "+
+"rhythm static thunder vandal whisper armor bullet cipher dynasty engine frost ghost hammer iron "+
+"justice knuckle locket mirror nectar onyx prophet quake razor serpent tunnel vapor wolf "+
+"avalanche backbone champion daylight elevate freedom glacier hustle instinct journey kinetic lyrical "+
+"momentum nebula obstacle paradise quicksand renegade survival takeover universe vibration wildfire "+
+"abandon ballistic carousel desperado eclipse fearless gasoline heritage illusion juggernaut labyrinth "+
+"machinery nocturnal overdrive pendulum quarantine revolution silhouette tarantula ultraviolet vendetta "+
+"watchtower acid blade chrome dust ember flame grit haze ink jolt kick lava mist neon "+
+"opal pulse rust soul tide volt wave axis brick coil drum edge fang gear hook "+
+"jade knot loop maze node opus peak ring sage trap vibe wick yarn zeal "+
+"alchemy bravado cascade defiance elegance ferocity gravitas harmony intensity jubilee "+
+"katana lockdown manifesto nirvana oracle pinnacle resilience sanctuary trajectory utopia "+
+"velocity warpath xenon yonder zodiac concrete pavement skyline subway turnstile graffiti "+
+"cipher hustle flow bars vinyl needle groove sample scratch breaks").split(/\s+/);
+
+/* ---------- word pool with API + difficulty filter ---------- */
+const APIS=["https://random-word-api.vercel.app/api?words=120","https://random-word-api.herokuapp.com/word?number=120"];
+let pool=[],online=false,fetching=false;
+const fits={any:w=>true,short:w=>w.length<=5,med:w=>w.length>=6&&w.length<=8,long:w=>w.length>=9};
+let diff=store.get("diff","any");
+
+function seedFill(){
+  const want=SEED.filter(fits[diff]);
+  while(pool.length<40&&want.length)pool.push(want[Math.random()*want.length|0]);
+  ui();
+}
+async function refill(){
+  if(fetching)return;fetching=true;
+  for(const url of APIS){
+    try{
+      const r=await fetch(url,{signal:AbortSignal.timeout(5000)});
+      const words=await r.json();
+      const ok=words.filter(w=>/^[a-z]{3,14}$/i.test(w)&&fits[diff](w));
+      if(ok.length){pool.push(...ok);online=true;ui();fetching=false;return}
+    }catch(e){}
+  }
+  online=false;seedFill();fetching=false;
+}
+function nextWord(){
+  if(pool.length<15)refill();
+  if(!pool.length)seedFill();
+  return pool.splice(Math.random()*pool.length|0,1)[0]||"freestyle";
+}
+
+/* ---------- session ---------- */
+const $=id=>document.getElementById(id);
+const wordEl=$("word"),sweep=$("sweep"),startBtn=$("startBtn");
+let running=false,timer=null,bars=0,said=0,curSaid=false,wakeLock=null,hist=[];
+let ivl=store.get("ivl",6);
+$("ivl").value=ivl;$("ivlVal").textContent=ivl+"s";
+
+function showWord(w){
+  wordEl.classList.add("drop");wordEl.classList.remove("said");curSaid=false;
+  setTimeout(()=>{
+    wordEl.textContent=w.toUpperCase();
+    const n=w.length;
+    wordEl.style.fontSize=Math.max(34,Math.min(78,Math.floor((window.innerWidth-40)/n*1.55)))+"px";
+    wordEl.classList.remove("drop");
+  },180);
+  hist.unshift({w:w,said:false});hist=hist.slice(0,4);
+  drawHist();
+  bars++;$("barCount").textContent=said+"/"+bars;
+  /* sweep restart */
+  sweep.classList.remove("run");sweep.style.width="0%";
+  void sweep.offsetWidth;
+  sweep.style.transitionDuration=ivl+"s";
+  sweep.classList.add("run");sweep.style.width="100%";
+}
+function drawHist(){
+  $("history").innerHTML=hist.slice(1).map(h=>"<span>"+(h.said?"✓ ":"")+h.w+"</span>").join("");
+}
+function tick(){showWord(nextWord());timer=setTimeout(tick,ivl*1000)}
+async function start(){
+  running=true;bars=0;said=0;$("barCount").textContent="0/0";
+  startBtn.textContent="Stop session";startBtn.classList.add("live");
+  try{wakeLock=await navigator.wakeLock.request("screen")}catch(e){}
+  tick();
+}
+function stop(){
+  running=false;clearTimeout(timer);
+  startBtn.textContent="Start session";startBtn.classList.remove("live");
+  sweep.classList.remove("run");sweep.style.width="0%";
+  try{wakeLock&&wakeLock.release()}catch(e){}
+  wordEl.textContent="READY";wordEl.style.fontSize="64px";
+}
+startBtn.onclick=()=>running?stop():start();
+wordEl.onclick=()=>{
+  if(!running||curSaid)return;
+  curSaid=true;said++;
+  wordEl.classList.add("said");
+  if(hist[0])hist[0].said=true;
+  $("barCount").textContent=said+"/"+bars;
+};
+$("advZone").onclick=()=>{if(running){clearTimeout(timer);tick()}};
+$("ivl").oninput=e=>{ivl=+e.target.value;$("ivlVal").textContent=ivl+"s";store.set("ivl",ivl)};
+document.addEventListener("visibilitychange",async()=>{
+  if(!document.hidden&&running){try{wakeLock=await navigator.wakeLock.request("screen")}catch(e){}}
+});
+
+/* difficulty pills */
+document.querySelectorAll("#diff .pill").forEach(p=>{
+  if(p.dataset.d===diff){document.querySelectorAll("#diff .pill").forEach(x=>x.classList.remove("on"));p.classList.add("on")}
+  p.onclick=()=>{
+    document.querySelectorAll("#diff .pill").forEach(x=>x.classList.remove("on"));
+    p.classList.add("on");diff=p.dataset.d;store.set("diff",diff);
+    pool=[];seedFill();refill();
+  };
+});
+function ui(){
+  $("poolCount").textContent=pool.length;
+  $("netdot").className=online?"ok":"";
+  $("netdot").id="netdot";
+  $("netlbl").textContent=online?"live words":"offline list";
+}
+
+/* ---------- beat deck: tabs ---------- */
+let tab=store.get("tab","synth");
+function setTab(t){
+  tab=t;store.set("tab",t);
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.t===t));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("on",x.dataset.p===t));
+}
+document.querySelectorAll(".tab").forEach(x=>x.onclick=()=>setTab(x.dataset.t));
+setTab(tab);
+
+/* ---------- built-in boom-bap synth ---------- */
+let ctx=null,beatOn=false,nextNote=0,step=0,schedId=null;
+let bpm=store.get("bpm",88);
+$("bpm").value=bpm;$("bpmVal").textContent=bpm;
+$("bpm").oninput=e=>{bpm=+e.target.value;$("bpmVal").textContent=bpm;store.set("bpm",bpm)};
+let noiseBuf=null;
+function noise(){
+  if(!noiseBuf){
+    noiseBuf=ctx.createBuffer(1,ctx.sampleRate*0.3,ctx.sampleRate);
+    const d=noiseBuf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  }
+  const s=ctx.createBufferSource();s.buffer=noiseBuf;return s;
+}
+function kick(t){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(48,t+0.11);
+  g.gain.setValueAtTime(0.9,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.28);
+  o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+0.3);
+}
+function snare(t){
+  const n=noise(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  f.type="bandpass";f.frequency.value=1900;f.Q.value=0.8;
+  g.gain.setValueAtTime(0.5,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+  n.connect(f).connect(g).connect(ctx.destination);n.start(t);n.stop(t+0.2);
+  const o=ctx.createOscillator(),g2=ctx.createGain();
+  o.type="triangle";o.frequency.value=190;
+  g2.gain.setValueAtTime(0.25,t);g2.gain.exponentialRampToValueAtTime(0.001,t+0.09);
+  o.connect(g2).connect(ctx.destination);o.start(t);o.stop(t+0.1);
+}
+function hat(t,open){
+  const n=noise(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  f.type="highpass";f.frequency.value=7200;
+  const len=open?0.18:0.045;
+  g.gain.setValueAtTime(open?0.22:0.16,t);g.gain.exponentialRampToValueAtTime(0.001,t+len);
+  n.connect(f).connect(g).connect(ctx.destination);n.start(t);n.stop(t+len+0.02);
+}
+const KICKS=[0,7,10],SNARES=[4,12],OPEN=[14];
+function schedule(){
+  const sixteenth=60/bpm/4;
+  while(nextNote<ctx.currentTime+0.12){
+    const s=step%16;
+    let t=nextNote;
+    if(s%2===1)t+=sixteenth*0.28; /* swing */
+    if(KICKS.includes(s))kick(t);
+    if(SNARES.includes(s))snare(t);
+    if(s%2===0)hat(t,OPEN.includes(s));
+    nextNote+=sixteenth;step++;
+  }
+}
+const beatBtn=$("beatBtn");
+function beatStart(){
+  if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();
+  ctx.resume();
+  nextNote=ctx.currentTime+0.06;step=0;
+  schedId=setInterval(schedule,25);
+  beatOn=true;beatBtn.textContent="■ Stop beat";beatBtn.classList.add("live");
+}
+function beatStop(){
+  clearInterval(schedId);beatOn=false;
+  beatBtn.textContent="▶ Play beat";beatBtn.classList.remove("live");
+}
+beatBtn.onclick=()=>beatOn?beatStop():beatStart();
+
+/* ---------- local file beat ---------- */
+const audio=new Audio();audio.loop=true;
+$("fileIn").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  audio.src=URL.createObjectURL(f);
+  audio.play();
+  if(beatOn)beatStop();
+  const l=$("fileLbl");l.textContent="♪ "+f.name+" (tap to change)";l.classList.add("loaded");
+};
+document.querySelector('[data-p="file"]').insertAdjacentHTML("beforeend",
+  '<button id="fileToggle" class="filebtn" style="display:none">Pause</button>');
+const ft=$("fileToggle");
+audio.onplay=()=>{ft.style.display="block";ft.textContent="❚❚ Pause track"};
+audio.onpause=()=>{ft.textContent="▶ Resume track"};
+ft.onclick=()=>audio.paused?audio.play():audio.pause();
+
+/* ---------- youtube beat ---------- */
+$("ytGo").onclick=()=>{
+  const u=$("ytUrl").value.trim();
+  const m=u.match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
+  if(!m){$("ytUrl").value="";$("ytUrl").placeholder="Couldn't read that link — paste a YouTube URL";return}
+  const id=m[1];
+  const fr=$("ytFrame");
+  fr.src="https://www.youtube.com/embed/"+id+"?autoplay=1&loop=1&playlist="+id+"&playsinline=1";
+  fr.style.display="block";
+  if(beatOn)beatStop();audio.pause();
+};
+
+/* ---------- boot ---------- */
+seedFill();refill();ui();
+</script>
+</body>
+</html>

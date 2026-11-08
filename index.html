@@ -203,8 +203,16 @@ section:last-of-type{border-bottom:0}
 .schema{font-family:var(--mono);font-size:.74rem;line-height:1.6;background:#0B1822;border:1px solid #223446;border-radius:6px;padding:14px 16px;color:#B9C6D2;overflow:auto;margin-top:6px}
 .schema .k{color:#F0C9A8}.schema .s{color:#9FD3B2}.schema .n{color:#C9B6F2}.schema .c{color:#5F7A90}
 .feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
-@media (max-width:980px){.proj,.proj.featured,.proj.wide{grid-column:span 6}}
-@media (max-width:720px){.proj,.proj.featured,.proj.wide{grid-column:span 12}.feat-grid{grid-template-columns:1fr}}
+.proj.full{grid-column:span 12}
+.webapps{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,4fr) minmax(0,4fr);gap:18px;align-items:stretch}
+.webapps>div{display:flex;flex-direction:column;gap:10px}
+.wa{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:8px;background:var(--bg-2);transition:border-color .15s}
+.wa:hover{border-color:var(--copper)}
+.wa b{font-weight:600;font-size:1.05rem}
+.wa span{color:var(--slate);font-size:.92rem}
+.wa em{font-style:normal;font-family:var(--mono);font-size:.76rem;color:var(--copper);margin-top:auto}
+@media (max-width:980px){.proj,.proj.featured,.proj.wide{grid-column:span 6}.proj.full{grid-column:span 12}.webapps{grid-template-columns:1fr 1fr}.webapps>div{grid-column:1/-1}}
+@media (max-width:720px){.proj,.proj.featured,.proj.wide,.proj.full{grid-column:span 12}.feat-grid{grid-template-columns:1fr}.webapps{grid-template-columns:1fr}}
 
 /* stack */
 .stack{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
@@ -543,12 +551,13 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <h3>Android Development</h3>
         <p>An automated, AI-assisted Android game development pipeline: an idea goes in as a prompt, a build bot produces a versioned, signed APK, and each iteration ships to a shared drive on command. Output so far is music- and gaming-focused — rhythm games driven by the player's own library, CYPHER, a freestyle-rap trainer that pairs random words with beats pulled from open APIs, a fractal generator, and a growing shelf of small arcade and idle games.</p>
         <div class="tags"><span class="tag">Kotlin · PWA</span><span class="tag">GitHub Actions</span><span class="tag">Claude API</span><span class="tag">Spotify · YouTube APIs</span></div>
+        <div class="links"><a href="apps/cypher/">Try CYPHER in your browser</a></div>
       </article>
 
       <article class="proj">
         <div class="meta"><span>personal · 2026</span></div>
         <h3>Game Mod Development</h3>
-        <p>WorldBound: a Minecraft world type that generates the real Earth at 1:3 scale in true proportion, from the GEBCO 2026 global bathymetry and elevation grid and Köppen-Geiger V3 climate maps for biomes. Swim the Mariana Trench and climb Everest — which meant raising the world height to 4,064 blocks — on a globe that wraps east to west. Also: a Shadow-of-Mordor-style nemesis system imported into Cyberpunk 2077, and Borderlands 2's gun modifiers and mechanics rebuilt in Minecraft with a mix-and-match gun workbench.</p>
+        <p>WorldBound: a Minecraft world type that generates the real Earth at 1:3 scale in true proportion, from the GEBCO 2026 global bathymetry and elevation grid and Köppen-Geiger V3 climate maps for biomes. Swim the Mariana Trench and climb Everest in a world 3,536 blocks tall (first built at 4,064), on a globe that wraps east to west. Also: a Shadow-of-Mordor-style nemesis system imported into Cyberpunk 2077, and Borderlands 2's gun modifiers and mechanics rebuilt in Minecraft with a mix-and-match gun workbench.</p>
         <div class="tags"><span class="tag">Fabric · Java</span><span class="tag">GEBCO · Köppen-Geiger</span><span class="tag">worldgen</span><span class="tag">Cyberpunk 2077</span></div>
       </article>
 
@@ -558,6 +567,19 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <p>The same résumé, filed as an entry in the Guide: a single-screen device over a live D3 star map of the Yale Bright Star Catalog, with an entry index, keyboard shortcuts and a working command line. Try <code style="font-family:var(--mono);font-size:.85em">towel</code>.</p>
         <div class="tags"><span class="tag">D3</span><span class="tag">canvas</span><span class="tag">vanilla JS</span></div>
         <div class="links"><a href="Hitchhikers%20Guide/">Open the Guide</a></div>
+      </article>
+
+      <article class="proj full">
+        <div class="webapps">
+          <div>
+            <div class="meta"><span>personal · play in the browser</span></div>
+            <h3>Web apps</h3>
+            <p>The HTML cores of two of my Android apps, running straight in the browser.</p>
+          </div>
+          <a class="wa" href="apps/cypher/"><b>CYPHER</b><span>Freestyle-rap trainer: random words on a timer over a live-synthesized boom-bap beat, your own track or a YouTube link. Words from an open API with an offline fallback.</span><em>Open →</em></a>
+          <a class="wa" href="apps/ricochet-song/"><b>Ricochet Song</b><span>Game-concept MVP: a bounce puzzle solved by ear. 20 tunes, an ear-only mode and a level studio with shareable codes.</span><em>Play →</em></a>
+        </div>
+        <div class="links"><a href="apps/">All web apps</a></div>
       </article>
 
     </div>

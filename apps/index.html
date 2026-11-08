@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web apps — Seth Timmons</title>
+<meta name="description" content="Small web apps and game prototypes by Seth Timmons, playable in the browser.">
+<meta name="theme-color" content="#0D1822">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0D1822;--card:#121F2A;--ink:#E8EEF3;--slate:#B3C3D1;--muted:#7F919F;--line:#243542;--copper:#D9904F;--copper-soft:rgba(217,144,79,.18);--ok:#62C48A;--font:"Bricolage Grotesque",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.55;font-size:17px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+a:focus-visible{outline:2px solid var(--copper);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 28px}
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--copper);box-shadow:0 0 0 4px var(--copper-soft)}
+.back{font-family:var(--mono);font-size:.78rem;color:var(--slate)}
+.back:hover{color:var(--ink)}
+main{padding:56px 0 72px}
+h1{font-size:clamp(2rem,4vw,2.8rem);font-weight:700;letter-spacing:-.015em;line-height:1.1}
+.lede{color:var(--slate);max-width:60ch;margin:14px 0 40px;font-size:1.05rem}
+.endpoint{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.endpoint .m{color:var(--copper);font-weight:500}.endpoint .c{color:var(--ok)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.app{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:28px;display:flex;flex-direction:column;gap:12px}
+.app .meta{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
+.app h2{font-size:1.45rem;font-weight:600;letter-spacing:-.01em}
+.app p{color:var(--slate);font-size:.97rem}
+.app ul{color:var(--slate);font-size:.93rem;padding-left:1.1em}
+.app li{margin:3px 0}
+.app li::marker{color:var(--copper)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--mono);font-size:.72rem;color:var(--slate);background:#152331;padding:3px 8px;border-radius:4px}
+.play{margin-top:auto;padding-top:10px;display:flex;gap:14px;align-items:center}
+.btn{display:inline-flex;align-items:center;padding:10px 18px;border-radius:6px;font-weight:600;background:var(--ink);color:var(--bg);border:1px solid var(--ink)}
+.btn:hover{background:var(--slate);border-color:var(--slate)}
+.small{font-size:.82rem;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:.85rem}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="../"><span class="dot" aria-hidden="true"></span>Seth Timmons</a>
+  <a class="back" href="../#projects">← back to the portfolio</a>
+</div></header>
+
+<main><div class="wrap">
+  <span class="endpoint"><span class="m">GET</span> /apps <span class="c">200</span></span>
+  <h1 style="margin-top:10px">Web apps</h1>
+  <p class="lede">Small things that run in your browser, no install. Both started as Android apps from my AI-assisted build pipeline; these are the same HTML cores the apps wrap.</p>
+
+  <div class="grid">
+    <article class="app">
+      <div class="meta">music · practice tool · 2026</div>
+      <h2>CYPHER</h2>
+      <p>A freestyle-rap trainer. Random words drop in on a timer with a sweep bar counting down the bar, over a beat you choose.</p>
+      <ul>
+        <li>Tap the word when you've used it; tap the right edge to skip. Tracks said / shown.</li>
+        <li>Words from an open random-word API, with a built-in list when you're offline. Filter by length.</li>
+        <li>Beats: a boom-bap loop synthesized live with the Web Audio API (adjustable BPM), your own audio file, or a YouTube link.</li>
+      </ul>
+      <div class="tags"><span class="tag">Web Audio API</span><span class="tag">REST</span><span class="tag">Wake Lock</span><span class="tag">PWA</span></div>
+      <div class="play"><a class="btn" href="cypher/">Open CYPHER</a><span class="small">Best on a phone. Sound on.</span></div>
+    </article>
+
+    <article class="app">
+      <div class="meta">game concept · minimum viable product · 2026</div>
+      <h2>Ricochet Song</h2>
+      <p>A bounce puzzle you solve by ear. Turn the paddles so the ball rings each coloured pad on its beat, in the tune's order, then reaches the flag.</p>
+      <ul>
+        <li>20 tunes in five sets, each adding one idea: crossing routes, bolted paddles, a switch that flips paddles, turns mid-roll, duets.</li>
+        <li>Ear mode hides every colour and letter, so you match the tune by listening.</li>
+        <li>A level studio: build your own boards, group them into courses, share them as a code.</li>
+      </ul>
+      <div class="tags"><span class="tag">Canvas</span><span class="tag">vanilla JS</span><span class="tag">Playwright-tested</span></div>
+      <div class="play"><a class="btn" href="ricochet-song/">Play Ricochet Song</a><span class="small">Mouse or touch.</span></div>
+      <p class="small">Art and sound from the Chequered Ink game asset pack, used under its licence.</p>
+    </article>
+  </div>
+</div></main>
+
+<footer><div class="wrap">© 2026 Seth Timmons · <a href="../" style="border-bottom:1px solid var(--line)">timmseth.github.io</a></div></footer>
+</body>
+</html>

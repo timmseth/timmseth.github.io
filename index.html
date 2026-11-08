@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#0D1822">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
 <script>
 try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}
 </script>
@@ -39,6 +39,7 @@ try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.
   --w:1120px;
   --font:"Bricolage Grotesque",system-ui,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --serif:"Cormorant Garamond",Georgia,serif;
 }
 html[data-theme="light"]{
   --bg:#F4F6F8;
@@ -214,6 +215,33 @@ section:last-of-type{border-bottom:0}
 @media (max-width:900px){.stack{grid-template-columns:1fr 1fr}.stack div:nth-child(3n){border-right:1px solid var(--line)}.stack div:nth-child(2n){border-right:0}.stack div:nth-last-child(-n+3){border-bottom:1px solid var(--line)}.stack div:nth-last-child(-n+2){border-bottom:0}}
 @media (max-width:560px){.stack{grid-template-columns:1fr}.stack div{border-right:0!important;border-bottom:1px solid var(--line)!important}.stack div:last-child{border-bottom:0!important}}
 
+/* poetry */
+.poetry .author{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:48px;align-items:start;margin:-12px 0 40px}
+.poetry .author p{font-family:var(--serif);font-size:1.22rem;line-height:1.5;color:var(--slate);margin-bottom:.8em;max-width:60ch}
+.poetry .author p:first-child{color:var(--ink);font-size:1.35rem}
+.poetry .author aside{font-size:.95rem;color:var(--muted);border-left:2px solid var(--copper);padding-left:16px;max-width:38ch}
+.carousel{position:relative}
+.track{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px;margin:0 -2px}
+.track::-webkit-scrollbar{display:none}
+.poem{flex:0 0 100%;scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:10px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);overflow:hidden}
+.poem .art{position:relative;min-height:320px}
+.poem .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.poem .body{padding:36px 40px 32px;display:flex;flex-direction:column;justify-content:center;gap:18px;min-width:0}
+.poem h3{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,2.6vw,2.2rem);letter-spacing:0;font-variation-settings:normal}
+.poem .verse{font-family:var(--serif);font-size:1.18rem;line-height:1.42;color:var(--ink);white-space:pre-line;max-width:48ch}
+.poem .verse i{font-style:italic}
+.poem .note{border-top:1px solid var(--line);padding-top:16px;font-size:.93rem;color:var(--slate);max-width:60ch}
+.poem .note b{display:block;color:var(--copper);font-weight:600;margin-bottom:4px}
+.carousel .ctl{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.carousel .dots{display:flex;gap:8px}
+.carousel .dots button{width:9px;height:9px;border-radius:50%;border:1px solid var(--slate);background:transparent;padding:0;cursor:pointer}
+.carousel .dots button[aria-current="true"]{background:var(--copper);border-color:var(--copper)}
+.carousel .arrows{display:flex;gap:8px}
+.carousel .arrows button{font-family:var(--mono);font-size:.78rem;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+.carousel .arrows button:hover{border-color:var(--copper);color:var(--copper)}
+.carousel .count{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+@media (max-width:900px){.poetry .author{grid-template-columns:1fr}.poem{grid-template-columns:1fr}.poem .art{aspect-ratio:16/10;min-height:0}.poem .body{padding:26px 24px}.poem .verse{font-size:1.12rem}}
+
 /* talks + contact */
 .talks{display:grid;gap:0;border-top:1px solid var(--line)}
 .talk{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:20px 0;border-bottom:1px solid var(--line)}
@@ -247,6 +275,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
         <a href="#experience">/experience</a>
         <a href="#projects">/projects</a>
         <a href="#stack">/stack</a>
+        <a href="#poetry">/poetry</a>
         <a href="#contact">/contact</a>
       </nav>
       <button id="theme" type="button" aria-pressed="false" title="Toggle light / dark mode">Let There Be Light</button>
@@ -563,6 +592,133 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
   </div>
 </section>
 
+<!-- ================= POETRY ================= -->
+<section class="poetry" id="poetry">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Poetry</h2>
+      <span class="endpoint"><span class="m">GET</span>/poetry?from=the-book <span class="c">200</span></span>
+    </div>
+    <div class="author">
+      <div>
+        <p>Hi! I'm Seth Timmons.</p>
+        <p>Every piece of art in this book is entirely unique and was created by an artificial intelligence based on words I gave it to fit my mood, the works I wrote, or a related subject. The words within this work are my own.</p>
+        <p>I am not important or special in any way. I simply enjoy writing and I decided to publish a collection.</p>
+        <p>I couldn't tell you why I decided to publish this book, but I feel that most people try too hard to justify their actions and existence.</p>
+        <p>As long as you do no harm, you should feel empowered to do as you wish. You deserve to live life on your terms and do things that bring you joy.</p>
+      </div>
+      <aside>From the "About the Author" page of a poetry collection in progress. Three of its poems are below; swipe or use the arrows to move between them.</aside>
+    </div>
+
+    <div class="carousel" id="poem-carousel">
+      <div class="track" tabindex="0" aria-label="Poems">
+        <article class="poem">
+          <div class="art"><img src="assets/poems/wolf.svg" alt="A great wolf beneath a moon, a thin ribbon across its open jaws" loading="lazy"></div>
+          <div class="body">
+            <h3>The Wolf's Wager</h3>
+            <div class="verse">Oh to be Fenrisulfr !
+Who grew too large too soon and broke
+his chains once forged by Gods of yore
+to be his fetters, bonds, and yoke.
+
+Stol’n they watched as Fenris grew.
+Long became his teeth and mane.
+His power sure and deep and true,
+The Aesir feared his size and strength.
+
+The Gods were not his foes, nor prey,
+Though kept in cave and without light.
+Then came they -- by fear betrayed
+to bind the wolf; Prevent his bite.
+
+They came with smiling chains in hand,
+"A game to test your strength!" they cried.
+Fenris Wolf was proud to stand.
+"Then bind me thus." he bold replied.
+
+The Wolf, such chains could not contain!
+He broke them! No sweat creased his brow.
+The Aesir's happiness was feigned,
+Fenris took note and softly growled.
+
+For a time they left, then came and brought
+a chain named Gleipnir, ribbon-thin.
+Of dwarven-make; All magic-wrought.
+They bid him come and try again.
+
+The wise wolf knew they schemed and lied.
+He gaped his titan-razored mouth.
+"Place here an Aesir arm inside."
+"You let me go, I'll spit it out."</div>
+            <div class="note"><b>Author's note</b>A retelling of the binding of Fenrir from the Prose Edda, told from the wolf's side of the bargain. The gods are not villains here and the wolf is not a monster; what undoes everyone is fear, and the lies fear makes reasonable. Tyr's hand is the price of a game nobody was honest about.</div>
+          </div>
+        </article>
+        <article class="poem">
+          <div class="art"><img src="assets/poems/cup.svg" alt="A teacup broken in two on a mat, tea spilled, a jasmine blossom beside it" loading="lazy"></div>
+          <div class="body">
+            <h3>The Broken Cup</h3>
+            <div class="verse">As I took my tea today, the leaves were picked too young.
+Countless years spent dry in storage, freshly bittered on my tongue.
+To make things worse, my cup broke. I smiled then—the source?
+I recalled a tale of ancient Zen. And penned it here in verse.
+
+Across from Him, disciples sat, Gathered 'round for tea.
+The Zen Master took a single sip, A single breath he breathed.
+Like many days, the master sat, His prized teacup in hand.
+Another sip, he mindfully took; The teacup shook in trembling hands.
+
+A peaceful smile on his face, His favorite cup enjoyed.
+His hands they may have trembled. But His mind was clear and poised.
+His disciple asked, "If you love that cup, why do you seem so calm?
+Don't you fear your favorite cup will break? Don't you know what can go wrong?"
+
+The master's smile grew then, For he knew now what to teach.
+He took a drink. He smiled once. He let it fall from reach.
+Jasmine tea upon the mat, A shattered cup on ground.
+The master never lost his smile; Once more, they gathered 'round.
+
+“My cup was always broken. In my mind, 'twas never whole.
+When I used it, I enjoyed it. Ever precious to my soul.
+Whether broken first by spade—in ground,
+By sun—when it was dried,
+By wheel—when it was powder-ground,
+By water, hands—when plied.
+By me—who went and dropped it,
+Nor By you—who first felt thirst.
+
+I do not cry when my cup breaks;
+For I let go of it first.”</div>
+            <div class="note"><b>Author's note</b>This one started with a real bad cup of tea and a real broken cup. It grew into a verse retelling of the Zen parable of the already-broken glass: the idea that the way to love a fragile thing fully is to accept, in advance, that it is already gone, so that its loss costs you nothing you hadn't already given up.</div>
+          </div>
+        </article>
+        <article class="poem">
+          <div class="art"><img src="assets/poems/cat.svg" alt="A cat curled asleep inside the dark folds of a sweater" loading="lazy"></div>
+          <div class="body">
+            <h3>The Cat's Comfort</h3>
+            <div class="verse">Oh, to sleep as a cat slept,
+Curled inside the smothering darkness of my sweater,
+Warmed by flesh and blood, and kept—
+Not free, but still kept better.</div>
+            <div class="note"><b>Author's note</b>This poem is based on an actual moment, but it is also a meditation on the nature of contentment using the cat as a lens through which to explore the human desire for simplicity, security, and freedom and the interplay between those oft-conflicting desires.</div>
+          </div>
+        </article>
+      </div>
+      <div class="ctl">
+        <div class="dots" role="tablist" aria-label="Choose a poem">
+          <button type="button" aria-label="The Wolf's Wager" aria-current="true"></button>
+          <button type="button" aria-label="The Broken Cup"></button>
+          <button type="button" aria-label="The Cat's Comfort"></button>
+        </div>
+        <span class="count"><span id="poem-n">1</span> / 3</span>
+        <div class="arrows">
+          <button type="button" data-dir="-1" aria-label="Previous poem">← prev</button>
+          <button type="button" data-dir="1" aria-label="Next poem">next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ================= CONTACT ================= -->
 <section class="contact" id="contact">
   <div class="wrap">
@@ -605,6 +761,17 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     paint();
   });
   paint();
+})();
+(function(){
+  var c=document.getElementById('poem-carousel'), track=c.querySelector('.track'), slides=[].slice.call(track.children),
+      dots=[].slice.call(c.querySelectorAll('.dots button')), n=document.getElementById('poem-n'), cur=0;
+  function go(i){ i=(i+slides.length)%slides.length; track.scrollTo({left:slides[i].offsetLeft-track.offsetLeft,behavior:'smooth'}); }
+  function mark(i){ cur=i; dots.forEach(function(d,k){ d.setAttribute('aria-current',k===i?'true':'false'); }); n.textContent=i+1; }
+  c.querySelectorAll('.arrows button').forEach(function(b){ b.addEventListener('click',function(){ go(cur+ +b.dataset.dir); }); });
+  dots.forEach(function(d,i){ d.addEventListener('click',function(){ go(i); }); });
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting) mark(slides.indexOf(e.target)); }); },{root:track,threshold:.6});
+  slides.forEach(function(s){ io.observe(s); });
+  track.addEventListener('keydown',function(e){ if(e.key==='ArrowRight'){go(cur+1);e.preventDefault();} if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault();} });
 })();
 </script>
 </body>

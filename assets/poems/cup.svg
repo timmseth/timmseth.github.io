@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="A teacup broken in two on a mat, tea spilled, a jasmine blossom beside it">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1A2733"/><stop offset="1" stop-color="#0B141C"/></linearGradient>
+    <linearGradient id="mat" x1="0" x2="1"><stop offset="0" stop-color="#3B2F22"/><stop offset="1" stop-color="#2A2118"/></linearGradient>
+  </defs>
+  <rect width="400" height="500" fill="url(#bg)"/>
+  <!-- mat -->
+  <path d="M0 330 L400 300 L400 500 L0 500Z" fill="url(#mat)"/>
+  <g stroke="#4B3C2C" stroke-width="1" opacity=".7"><path d="M0 360 L400 330"/><path d="M0 390 L400 360"/><path d="M0 420 L400 390"/><path d="M0 450 L400 420"/><path d="M0 480 L400 450"/></g>
+  <!-- spill -->
+  <path d="M120 395 C 150 370, 230 372, 262 392 C 300 410, 280 436, 236 440 C 190 446, 150 444, 128 428 C 108 416, 104 404, 120 395Z" fill="#8A5A26" opacity=".85"/>
+  <path d="M150 400 C 170 390, 220 392, 240 402 C 250 410, 230 420, 200 420 C 170 420, 142 412, 150 400Z" fill="#B47A3A" opacity=".5"/>
+  <!-- cup halves -->
+  <g fill="#E8DCC2" stroke="#B9AD95" stroke-width="1.2">
+    <path d="M118 318 Q 112 352 140 372 L 176 370 L 184 318 Z"/>
+    <path d="M196 318 L 212 372 L 262 370 Q 286 350 280 318 Z"/>
+  </g>
+  <g fill="#D9904F" opacity=".9"><path d="M184 318 L 196 318 L 212 372 L 176 370 Z" fill="#8A5A26"/></g>
+  <path d="M134 326 q22 -10 44 0" fill="none" stroke="#B9AD95" stroke-width="1"/>
+  <path d="M206 326 q30 -10 60 0" fill="none" stroke="#B9AD95" stroke-width="1"/>
+  <!-- shards -->
+  <path d="M300 392 l18 -8 l6 14 z" fill="#E8DCC2"/><path d="M96 388 l14 -4 l-2 12 z" fill="#E8DCC2"/>
+  <!-- steam rising from the spill -->
+  <g fill="none" stroke="#9FB2C2" stroke-width="1.2" opacity=".55" stroke-linecap="round">
+    <path d="M190 300 c -10 -20, 10 -30, 0 -50"/><path d="M210 290 c -10 -20, 10 -30, 0 -50"/>
+  </g>
+  <!-- jasmine blossom -->
+  <g transform="translate(318 446)">
+    <g fill="#F3EDE0"><ellipse rx="6" ry="13" transform="rotate(0)"/><ellipse rx="6" ry="13" transform="rotate(72)"/><ellipse rx="6" ry="13" transform="rotate(144)"/><ellipse rx="6" ry="13" transform="rotate(216)"/><ellipse rx="6" ry="13" transform="rotate(288)"/></g>
+    <circle r="3.5" fill="#D9904F"/>
+  </g>
+</svg>

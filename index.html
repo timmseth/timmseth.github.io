@@ -3,3051 +3,544 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Hitchhiker's Guide to Seth Timmons</title>
+<title>Seth Timmons — API Integrations Engineer</title>
+<meta name="description" content="Seth Timmons is an API integrations engineer who makes systems that were never meant to talk to each other exchange data reliably. 13+ years across higher-ed ERP, EdTech workflow platforms, and independent products.">
+<meta property="og:title" content="Seth Timmons — API Integrations Engineer">
+<meta property="og:description" content="Integration pipelines, ERP connectors, MCP tooling, and a few products of my own.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F4F6F8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ==============================
-   1. RESET & VARIABLES
-   ============================== */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --space-bg: #050510;
-  --cover-bg: #1a1a3e;
-  --cover-leather: linear-gradient(145deg, #2a1a4a 0%, #150d2f 40%, #2a1a4a 60%, #150d2f 100%);
-  --cover-gold: #f0e030;
-  --cover-gold-glow: rgba(240, 224, 48, 0.4);
-  --page-bg: #f5e6c8;
-  --page-bg-grad: linear-gradient(135deg, #f5e6c8 0%, #e8d5b0 50%, #f0dfc0 100%);
-  --page-text: #2a1a0e;
-  --page-header: #4a2080;
-  --page-accent: #6b30a0;
-  --page-dim: #7a6a5a;
-  --terminal-bg: #0a0a0a;
-  --terminal-green: #33ff33;
-  --terminal-dim: #0d6b0d;
-  --terminal-amber: #ffaa00;
-  --terminal-glow: 0 0 5px rgba(51, 255, 51, 0.4);
-  --book-width: min(800px, 92vw);
-  --book-height: min(560px, calc(100vh - 70px));
-}
-
-html {
-  zoom: 1;
-}
-/* Zoom only scales up on large viewports */
-@media (min-width: 1400px) { html { zoom: 1.75; } }
-@media (min-width: 1100px) and (max-width: 1399px) { html { zoom: 1.4; } }
-@media (min-width: 900px) and (max-width: 1099px) { html { zoom: 1.2; } }
-/* 601-899 and ≤600 both stay at zoom: 1 */
-html, body {
-  width: 100%; height: 100%;
-  overflow: hidden;
-  background: var(--space-bg);
-  font-family: 'Crimson Text', Georgia, serif;
-  color: var(--page-text);
-}
-
-/* ==============================
-   2. STARFIELD
-   ============================== */
-#starfield {
-  position: fixed; inset: 0;
-  z-index: 0;
-}
-
-#cybergrid {
-  position: fixed; inset: 0;
-  z-index: 0;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-  pointer-events: none;
-}
-#cybergrid.active {
-  opacity: 1;
-}
-
-#bg-toggle-mobile {
-  display: block;
-  position: fixed;
-  top: 8px; left: 8px;
-  z-index: 500;
-  background: rgba(10, 10, 10, 0.7);
-  border: 1px solid #444;
-  border-radius: 4px;
-  color: #888;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.55rem;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-#bg-toggle-mobile:hover {
-  color: #f0e030;
-  border-color: #f0e030;
-  background: rgba(10, 10, 10, 0.85);
-}
-#bg-toggle-mobile:active {
-  color: #f0e030;
-  border-color: #f0e030;
-}
-#bg-toggle-mobile.active {
-  color: #0ff;
-  border-color: #0ff;
-}
-
-#bg-info-btn {
-  position: fixed;
-  top: 8px; left: 62px;
-  z-index: 500;
-  background: rgba(10, 10, 10, 0.7);
-  border: 1px solid #444;
-  border-radius: 4px;
-  color: #888;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.55rem;
-  padding: 4px 7px;
-  cursor: pointer;
-}
-#bg-info-btn:hover {
-  color: #f0e030;
-  border-color: #f0e030;
-  background: rgba(10, 10, 10, 0.85);
-}
-
-#refresh-btn {
-  position: fixed;
-  bottom: 40px; right: 8px;
-  z-index: 500;
-  background: rgba(10, 10, 10, 0.7);
-  border: 1px solid #444;
-  border-radius: 4px;
-  color: #888;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.55rem;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-#refresh-btn:hover {
-  color: #f0e030;
-  border-color: #f0e030;
-  background: rgba(10, 10, 10, 0.85);
-}
-
-#bg-info-popup {
-  display: none;
-  position: fixed;
-  top: 34px; left: 8px;
-  z-index: 501;
-  background: rgba(10, 10, 10, 0.92);
-  border: 1px solid #444;
-  border-radius: 6px;
-  color: #aaa;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.6rem;
-  line-height: 1.6;
-  padding: 12px 16px;
-  max-width: 320px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-}
-#bg-info-popup.visible { display: block; }
-#bg-info-popup strong { color: #f0e030; }
-#bg-info-popup .info-tools { color: #0ff; }
-
-#bg-bar-toggle {
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px; padding: 6px 0;
-  cursor: pointer; user-select: none;
-  border-bottom: 1px solid rgba(51, 255, 51, 0.1);
-  font-family: 'Fira Code', monospace;
-  font-size: 0.7rem;
-  color: var(--terminal-dim);
-  transition: color 0.2s;
-  flex-shrink: 0;
-  position: relative; z-index: 10;
-}
-#bg-bar-toggle:hover { color: var(--terminal-green); }
-#bg-bar-toggle .toggle-arrow {
-  transition: transform 0.3s;
-  font-size: 0.6rem;
-}
-#bg-bar-toggle.open .toggle-arrow { transform: rotate(180deg); }
-
-/* ==============================
-   3. LOADING SCREEN
-   ============================== */
-#loading {
-  position: fixed; inset: 0; z-index: 1000;
-  background: var(--space-bg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  font-family: 'Fira Code', monospace;
-  color: var(--terminal-green);
-  font-size: 14px;
-  transition: opacity 0.8s ease;
-}
-#loading.fade-out { opacity: 0; pointer-events: none; }
-#loading-text { text-align: center; line-height: 2; }
-.loading-line { opacity: 0; transition: opacity 0.3s; }
-.loading-line.visible { opacity: 1; }
-
-/* ==============================
-   4. COVER
-   ============================== */
-#cover-wrapper {
-  position: fixed; inset: 0; z-index: 10;
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.6s ease;
-}
-#cover-wrapper.hidden { opacity: 0; pointer-events: none; }
-
-#cover {
-  width: var(--book-width); height: var(--book-height);
-  background: var(--terminal-bg);
-  border: 3px solid #3a2a6a;
-  border-radius: 8px;
-  box-shadow: 0 0 40px rgba(42, 26, 74, 0.5), inset 0 0 30px rgba(0,0,0,0.5),
-    4px 4px 15px rgba(0,0,0,0.6);
-  display: flex; flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  transition: opacity 0.5s ease;
-}
-#cover-wrapper.hidden #cover { opacity: 0; }
-
-/* Steampunk bronze borders on terminal */
-.cover-border-top, .cover-border-bottom {
-  position: absolute;
-  left: 0; right: 0;
-  height: 28px;
-  z-index: 10;
-  pointer-events: none;
-  background: #0a0a0a;
-  border-radius: 8px 8px 0 0;
-}
-.cover-border-top { top: 0; }
-.cover-border-bottom { bottom: 0; border-radius: 0 0 8px 8px; z-index: 5; }
-.cover-border-top::after, .cover-border-bottom::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #c9943e 0%, #e8c36a 15%, #c9943e 30%, #8a6420 50%, #c9943e 70%, #e8c36a 85%, #c9943e 100%);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
-  mask-size: cover;
-  -webkit-mask-size: cover;
-}
-
-/* CRT scanlines on cover terminal */
-#cover::before {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 3px);
-  pointer-events: none; z-index: 2; border-radius: 8px;
-}
-#cover::after {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%);
-  pointer-events: none; z-index: 3; border-radius: 8px;
-}
-
-/* Cover terminal layout */
-#cover-terminal {
-  display: flex; flex-direction: column;
-  height: 100%; position: relative;
-  zoom: 1;
-  padding-top: 32px;
-  padding-bottom: 32px;
-}
-@media (min-width: 1400px) {
-  #cover-terminal { zoom: calc(1 / 1.55); padding-top: 44px; padding-bottom: 44px; }
-}
-@media (min-width: 1100px) and (max-width: 1399px) {
-  #cover-terminal { zoom: calc(1 / 1.25); padding-top: 36px; padding-bottom: 36px; }
-}
-@media (min-width: 900px) and (max-width: 1099px) {
-  #cover-terminal { zoom: calc(1 / 1.1); padding-top: 32px; padding-bottom: 32px; }
-}
-
-.cover-header {
-  padding: 12px 20px 8px 20px;
-  border-bottom: 1px solid rgba(51, 255, 51, 0.15);
-  display: flex; align-items: baseline; justify-content: center; gap: 15px;
-  flex-shrink: 0;
-}
-
-.cover-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(1rem, 2.5vw, 1.4rem);
-  font-weight: 900;
-  color: var(--cover-gold);
-  text-shadow: 0 0 15px var(--cover-gold-glow), 0 0 30px var(--cover-gold-glow);
-  letter-spacing: 0.08em;
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-.cover-sub {
-  font-family: 'Fira Code', monospace;
-  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
-  color: var(--terminal-dim);
-}
-
-/* Terminal body and input already styled via .terminal-page rules —
-   but on the cover they're direct children of #cover-terminal */
-#cover .terminal-body {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 15px 20px 10px 20px;
-  font-family: 'Fira Code', monospace;
-  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
-  color: var(--terminal-green);
-  text-shadow: var(--terminal-glow);
-  line-height: 1.6;
-}
-#cover .terminal-body::-webkit-scrollbar { width: 6px; }
-#cover .terminal-body::-webkit-scrollbar-track { background: #111; }
-#cover .terminal-body::-webkit-scrollbar-thumb { background: #1a4a1a; border-radius: 3px; }
-
-#cover .terminal-input-row {
-  display: flex; align-items: center;
-  padding: 8px 20px 12px 20px;
-  font-family: 'Fira Code', monospace;
-  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
-  color: var(--terminal-green);
-  text-shadow: var(--terminal-glow);
-  flex-shrink: 0;
-  position: relative; z-index: 4;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { text-shadow: 0 0 15px var(--cover-gold-glow), 0 0 30px var(--cover-gold-glow); }
-  50% { text-shadow: 0 0 25px var(--cover-gold-glow), 0 0 50px var(--cover-gold-glow), 0 0 70px rgba(240,224,48,0.15); }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-/* ==============================
-   5. BOOK CONTAINER
-   ============================== */
-#book-wrapper {
-  position: fixed; inset: 0; z-index: 5;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.6s ease 0.4s;
-}
-#book-wrapper.visible { opacity: 1; pointer-events: auto; }
-
-#book-frame {
-  position: relative;
-  width: var(--book-width); height: var(--book-height);
-  overflow: hidden;
-  border-radius: 4px 12px 12px 4px;
-}
-
-#book {
-  width: 100%; height: 100%;
-  position: relative;
-  border-radius: 4px 12px 12px 4px;
-  overflow: hidden;
-}
-
-/* Book spine/frame */
-#book::before {
-  content: ''; position: absolute;
-  left: -8px; top: -4px; bottom: -4px; width: 12px;
-  background: linear-gradient(90deg, #150d2f, #2a1a4a, #150d2f);
-  border-radius: 4px 0 0 4px;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.4);
-  z-index: 100;
-}
-
-/* ==============================
-   6. PAGES
-   ============================== */
-.page {
-  background: var(--page-bg-grad) !important;
-  border-radius: 0 10px 10px 0;
-  box-shadow: 2px 2px 10px rgba(0,0,0,0.3), inset -2px 0 8px rgba(0,0,0,0.05);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 42px 40px 42px 45px;
-  font-size: 0.92rem;
-}
-
-.page::-webkit-scrollbar { width: 6px; }
-.page::-webkit-scrollbar-track { background: transparent; }
-.page::-webkit-scrollbar-thumb { background: #9a80c0; border-radius: 3px; }
-
-/* Steampunk bronze scroll borders — fixed to book edges, not scrolling */
-.book-border-top, .book-border-bottom {
-  position: absolute;
-  left: 0; right: 0;
-  height: 28px;
-  z-index: 200;
-  pointer-events: none;
-  background: #0a0a0a;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  border-radius: 0 4px 4px 0;
-}
-.book-border-top::after, .book-border-bottom::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #c9943e 0%, #e8c36a 15%, #c9943e 30%, #8a6420 50%, #c9943e 70%, #e8c36a 85%, #c9943e 100%);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='28'%3E%3Cdefs%3E%3Cpattern id='g' patternUnits='userSpaceOnUse' width='36' height='28'%3E%3Ccircle cx='18' cy='14' r='7' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='18' cy='14' r='2.5' fill='white'/%3E%3Cline x1='18' y1='3' x2='18' y2='7' stroke='white' stroke-width='1.5'/%3E%3Cline x1='18' y1='21' x2='18' y2='25' stroke='white' stroke-width='1.5'/%3E%3Cline x1='7' y1='14' x2='11' y2='14' stroke='white' stroke-width='1.5'/%3E%3Cline x1='25' y1='14' x2='29' y2='14' stroke='white' stroke-width='1.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='800' height='3' y='0' fill='white'/%3E%3Crect width='800' height='22' y='3' fill='url(%23g)'/%3E%3Crect width='800' height='3' y='25' fill='white'/%3E%3C/svg%3E");
-  mask-size: cover;
-  -webkit-mask-size: cover;
-  border-radius: 0 4px 4px 0;
-}
-.book-border-top {
-  top: 0;
-}
-.book-border-bottom {
-  bottom: 0;
-}
-
-/* Page header */
-.page-header {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.65rem;
-  color: var(--page-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d4c4a8;
-  margin-bottom: 20px;
-}
-
-.entry-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(1.3rem, 3.5vw, 2rem);
-  color: var(--page-header);
-  margin-bottom: 5px;
-}
-
-.entry-subtitle {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.7rem;
-  color: var(--page-dim);
-  margin-bottom: 20px;
-}
-
-.entry-body { font-size: clamp(0.82rem, 1.8vw, 0.95rem); line-height: 1.7; color: var(--page-text); }
-.entry-body p { margin-bottom: 1em; }
-.entry-body .guide-note {
-  background: rgba(106, 48, 160, 0.06);
-  border-left: 3px solid var(--page-accent);
-  padding: 10px 15px; margin: 15px 0;
-  font-style: italic; font-size: 0.95em;
-}
-.entry-body .highlight { color: var(--page-header); font-weight: 700; }
-.entry-body .rating { font-family: 'Fira Code', monospace; font-size: 0.85em; color: var(--page-accent); }
-
-.skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; margin: 12px 0; }
-.skill-item { font-size: 0.9rem; line-height: 1.5; }
-.skill-cat { font-weight: 700; color: var(--page-header); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 12px; grid-column: 1 / -1; }
-
-.timeline-entry { margin-bottom: 20px; padding-left: 15px; border-left: 2px solid #d4c4a8; }
-.timeline-entry .role { font-weight: 700; color: var(--page-header); font-size: 1rem; }
-.timeline-entry .org { font-style: italic; color: var(--page-dim); font-size: 0.9rem; }
-.timeline-entry .period { font-family: 'Fira Code', monospace; font-size: 0.7rem; color: var(--page-dim); }
-.timeline-entry .desc { font-size: 0.9rem; margin-top: 5px; line-height: 1.6; }
-
-.project-item { margin-bottom: 15px; }
-.project-item .name { font-weight: 700; color: var(--page-header); }
-.project-item .detail { font-size: 0.9rem; line-height: 1.5; }
-
-/* Avatar */
-.avatar-container {
-  float: right;
-  margin: 0 0 15px 20px;
-  width: 160px;
-  position: relative;
-  cursor: pointer;
-}
-.avatar-container img {
-  width: 100%;
-  border-radius: 8px;
-  border: 2px solid var(--page-accent);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2), 0 0 20px rgba(106, 48, 160, 0.2);
-}
-.avatar-container .avatar-real {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  border-radius: 8px;
-  border: 2px solid var(--page-accent);
-  opacity: 0;
-  transition: opacity 2s ease;
-}
-.avatar-container:hover .avatar-real,
-.avatar-real.revealed {
-  opacity: 0.55;
-  transition: opacity 0.4s ease;
-}
-.avatar-caption {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.6rem;
-  color: var(--page-dim);
-  text-align: center;
-  margin-top: 4px;
-}
-.avatar-hint {
-  color: #6699ff;
-  text-decoration: underline;
-  cursor: pointer;
-}
-@media (max-width: 600px) {
-  .avatar-container { float: none; margin: 0 auto 15px auto; width: 130px; }
-}
-
-/* ==============================
-   7. TERMINAL PAGE
-   ============================== */
-.page.terminal-page {
-  background: var(--terminal-bg);
-  padding: 0;
-  border-radius: 0 10px 10px 0;
-  display: flex; flex-direction: column;
-}
-
-/* CRT scanline overlay */
-.page.terminal-page::before {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.15) 0px,
-    rgba(0, 0, 0, 0.15) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  pointer-events: none; z-index: 2;
-  border-radius: 0 10px 10px 0;
-}
-
-/* CRT flicker */
-.page.terminal-page::after {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%);
-  pointer-events: none; z-index: 3;
-  border-radius: 0 10px 10px 0;
-  animation: crt-flicker 0.05s infinite alternate;
-}
-
-@keyframes crt-flicker {
-  0% { opacity: 0.97; }
-  100% { opacity: 1; }
-}
-
-.terminal-body {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 20px 20px 10px 20px;
-  font-family: 'Fira Code', monospace;
-  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
-  color: var(--terminal-green);
-  text-shadow: var(--terminal-glow);
-  position: relative; z-index: 1;
-  line-height: 1.6;
-}
-
-.terminal-body::-webkit-scrollbar { width: 6px; }
-.terminal-body::-webkit-scrollbar-track { background: #111; }
-.terminal-body::-webkit-scrollbar-thumb { background: #1a4a1a; border-radius: 3px; }
-
-.terminal-line { margin-bottom: 2px; word-wrap: break-word; }
-.terminal-line.input-echo { color: #66ff66; }
-.terminal-line.error { color: #ff6666; }
-.terminal-line.system { color: var(--terminal-amber); }
-.terminal-line.dim { color: var(--terminal-dim); }
-.terminal-line.highlight { color: #66ffcc; }
-.terminal-line img {
-  max-width: 250px; max-height: 200px;
-  margin: 5px 0; border: 1px solid #1a4a1a;
-  border-radius: 4px;
-}
-
-.terminal-input-row {
-  display: flex; align-items: center;
-  padding: 8px 20px 15px 20px;
-  font-family: 'Fira Code', monospace;
-  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
-  color: var(--terminal-green);
-  text-shadow: var(--terminal-glow);
-  position: relative; z-index: 4;
-}
-
-.terminal-prompt { white-space: nowrap; margin-right: 8px; }
-
-#terminal-input {
-  flex: 1; background: transparent; border: none; outline: none;
-  font-family: 'Fira Code', monospace;
-  font-size: inherit; color: var(--terminal-green);
-  text-shadow: var(--terminal-glow);
-  caret-color: var(--terminal-green);
-}
-
-/* ==============================
-   8. NAVIGATION — Side Arrows
-   ============================== */
-/* Side arrow buttons */
-.side-arrow {
-  position: fixed;
-  top: 50%; transform: translateY(-50%);
-  z-index: 25;
-  background: rgba(42, 26, 74, 0.5);
-  border: 1px solid rgba(74, 58, 122, 0.5);
-  color: var(--cover-gold);
-  font-family: 'Fira Code', monospace;
-  font-size: 1.4rem;
-  padding: 18px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  text-shadow: 0 0 8px var(--cover-gold-glow);
-  opacity: 0; pointer-events: none;
-  backdrop-filter: blur(4px);
-}
-.side-arrow.visible { opacity: 0.6; pointer-events: auto; }
-.side-arrow:hover { opacity: 1; background: rgba(42, 26, 74, 0.85); border-color: var(--cover-gold); }
-.side-arrow:disabled { opacity: 0.15 !important; cursor: default; pointer-events: none; }
-#arrow-left { left: max(8px, calc(50% - var(--book-width) / 2 - 50px)); }
-#arrow-right { right: max(8px, calc(50% - var(--book-width) / 2 - 50px)); }
-
-/* Bottom bar: dots + label + home button */
-#nav-bar {
-  position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
-  z-index: 25; display: flex; align-items: center; gap: 12px;
-  opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
-}
-#nav-bar.visible { opacity: 1; pointer-events: auto; }
-
-.page-dots { display: flex; gap: 8px; align-items: center; }
-.page-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: #3a2a5a; border: 1px solid #5a4a7a;
-  cursor: pointer; transition: all 0.3s;
-}
-.page-dot.active { background: var(--cover-gold); box-shadow: 0 0 6px var(--cover-gold-glow); }
-
-#page-label {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.6rem; color: #8a7aba;
-  text-align: center; white-space: nowrap;
-}
-
-#btn-home {
-  background: rgba(42, 26, 74, 0.6); border: 1px solid #4a3a7a;
-  color: var(--cover-gold); font-family: 'Fira Code', monospace;
-  font-size: 0.7rem; padding: 4px 10px; border-radius: 4px;
-  cursor: pointer; transition: all 0.2s;
-  text-shadow: 0 0 6px var(--cover-gold-glow);
-  white-space: nowrap;
-}
-#btn-home:hover { background: rgba(42, 26, 74, 0.9); border-color: var(--cover-gold); }
-
-/* ==============================
-   9. GUI PANEL
-   ============================== */
-#gui-toggle {
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px; padding: 6px 0;
-  cursor: pointer; user-select: none;
-  border-top: 1px solid rgba(51, 255, 51, 0.1);
-  font-family: 'Fira Code', monospace;
-  font-size: 0.7rem;
-  color: var(--terminal-dim);
-  transition: color 0.2s;
-  flex-shrink: 0;
-  position: relative; z-index: 10;
-}
-#gui-toggle:hover { color: var(--terminal-green); }
-#gui-toggle .toggle-arrow {
-  transition: transform 0.3s;
-  font-size: 0.6rem;
-}
-#gui-toggle.open .toggle-arrow { transform: rotate(180deg); }
-
-#gui-panel {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-  position: relative; z-index: 10;
-}
-#gui-panel.open {
-  max-height: 300px;
-  overflow-y: auto;
-}
-#gui-panel::-webkit-scrollbar { width: 4px; }
-#gui-panel::-webkit-scrollbar-track { background: #0a0a0a; }
-#gui-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
-.gui-inner {
-  padding: 10px 16px 14px 16px;
-  background: #0d0d0d;
-  border-top: 1px solid #222;
-}
-
-.gui-section-label {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.75rem;
-  color: #f0e030;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin: 12px 0 8px 0;
-  text-shadow: 0 0 8px rgba(240, 224, 48, 0.3);
-}
-.gui-section-label:first-child { margin-top: 2px; }
-
-.gui-buttons {
-  display: flex; flex-wrap: wrap; gap: 6px;
-}
-
-/* Hardware keycap style */
-.gui-btn {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.85rem;
-  color: #d0d0d0;
-  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 60%, #111 100%);
-  border: 1px solid #3a3a3a;
-  border-bottom: 3px solid #0a0a0a;
-  border-radius: 5px;
-  padding: 7px 14px;
-  cursor: pointer;
-  transition: all 0.1s;
-  box-shadow: 0 3px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-  position: relative;
-  overflow: hidden;
-  text-shadow: 0 0 4px rgba(200, 200, 200, 0.15);
-  transform: translateY(-1px);
-}
-.gui-btn:hover {
-  background: linear-gradient(180deg, #3a3a3a 0%, #252525 60%, #1a1a1a 100%);
-  border-color: #555;
-  color: #f0e030;
-  text-shadow: 0 0 6px rgba(240, 224, 48, 0.3);
-  transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
-}
-.gui-btn:active {
-  transform: translateY(1px);
-  border-bottom-width: 1px;
-  box-shadow: 0 0 2px rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.3);
-  background: linear-gradient(180deg, #1a1a1a 0%, #111 100%);
-}
-.gui-btn.typing {
-  color: var(--terminal-green);
-  border-color: var(--terminal-green);
-  text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
-  box-shadow: 0 2px 3px rgba(0,0,0,0.4), 0 0 8px rgba(51, 255, 51, 0.15);
-}
-.gui-btn .btn-icon {
-  font-style: normal;
-  margin-right: 4px;
-  opacity: 0.6;
-}
-
-/* ==============================
-   10. ANIMATIONS
-   ============================== */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ==============================
-   10. FOOTER
-   ============================== */
-#site-footer {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: #0a0a0a;
-  text-align: center;
-  padding: 4px 0;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.55rem;
-  color: #666;
-  z-index: 500;
-}
-#site-footer a {
-  color: #888;
-  text-decoration: none;
-}
-#site-footer a:hover {
-  color: #ccc;
-}
-
-/* ==============================
-   11. RESPONSIVE
-   ============================== */
-@media (max-width: 600px) {
-  html { zoom: 1; }
-
-  :root {
-    --book-width: 96vw;
-    --book-height: calc(100vh - 40px);
-  }
-
-  /* Cover / terminal fills mobile screen */
-  #cover {
-    width: 96vw; height: 92vh;
-    border-width: 2px;
-    border-radius: 6px;
-  }
-  #cover-terminal {
-    zoom: 1;
-    padding-top: 24px;
-    padding-bottom: 24px;
-  }
-
-  /* Thinner scroll borders on mobile */
-  .cover-border-top, .cover-border-bottom,
-  .book-border-top, .book-border-bottom {
-    height: 18px;
-  }
-
-  /* Terminal text sizes */
-  .cover-header { padding: 8px 12px 6px 12px; }
-  .cover-title { font-size: 1rem; }
-  .terminal-body {
-    padding: 10px 12px 6px 12px;
-    font-size: 0.75rem;
-    line-height: 1.5;
-  }
-  .terminal-input-row {
-    padding: 6px 12px 8px 12px;
-    font-size: 0.75rem;
-  }
-  #terminal-input { font-size: 0.75rem; }
-
-  /* BG bar toggle */
-  #bg-bar-toggle { font-size: 0.55rem; padding: 4px 0; }
-
-  /* GUI panel mobile */
-  #gui-toggle { font-size: 0.55rem; padding: 4px 0; }
-  .gui-inner { padding: 6px 10px 10px 10px; }
-  .gui-btn { font-size: 0.65rem; padding: 3px 7px; }
-  .gui-section-label { font-size: 0.5rem; margin: 6px 0 4px 0; }
-  .gui-buttons { gap: 4px; }
-  #gui-panel.open { max-height: 200px; }
-
-  /* Book pages */
-  .page {
-    padding: 24px 16px 30px 20px;
-    font-size: 0.82rem;
-  }
-  .entry-title { font-size: 1.2rem; }
-  .entry-subtitle { font-size: 0.6rem; }
-  .page-header { font-size: 0.5rem; }
-  .entry-body { font-size: 0.78rem; line-height: 1.6; }
-  .skill-grid { grid-template-columns: 1fr; }
-  .avatar-container { float: none; margin: 0 auto 12px auto; width: 110px; }
-
-  /* Nav */
-  #nav-bar { bottom: 6px; gap: 6px; font-size: 0.6rem; }
-  #arrow-left { left: 2px; }
-  #arrow-right { right: 2px; }
-  .side-arrow { padding: 12px 5px; font-size: 1rem; border-radius: 4px; }
-
-  /* Footer */
-  #site-footer { font-size: 0.45rem; padding: 2px 0; }
-}
-
-/* ==============================
-   11b. INTERMEDIATE RESPONSIVE (tablets / small windows / resized desktop)
-   ============================== */
-
-/* Fix BG buttons overlapping DON'T PANIC at all sizes */
-#bg-toggle-mobile, #bg-info-btn {
-  top: 4px;
-}
-
-/* Prevent horizontal overflow on book pages at all sizes */
-.page { word-wrap: break-word; overflow-wrap: break-word; }
-.page-header { word-wrap: break-word; overflow-wrap: break-word; }
-.entry-subtitle { word-wrap: break-word; overflow-wrap: break-word; }
-
-/* Nav bar: always above footer */
-#nav-bar { bottom: 20px; }
-
-/* 900-1099: gentle scale-down */
-@media (min-width: 900px) and (max-width: 1099px) {
-  :root {
-    --book-width: min(760px, 94vw);
-    --book-height: min(540px, calc(100vh - 60px));
-  }
-  .side-arrow { padding: 14px 8px; font-size: 1.2rem; }
-  #arrow-left { left: max(4px, calc(50% - var(--book-width) / 2 - 42px)); }
-  #arrow-right { right: max(4px, calc(50% - var(--book-width) / 2 - 42px)); }
-}
-
-/* 601-899: compact layout, no zoom */
-@media (min-width: 601px) and (max-width: 899px) {
-  :root {
-    --book-width: min(700px, 96vw);
-    --book-height: min(500px, calc(100vh - 50px));
-  }
-
-  .cover-header { padding: 10px 16px 6px 16px; }
-  .cover-title { font-size: clamp(0.9rem, 2.2vw, 1.2rem); }
-
-  .page { padding: 30px 22px 30px 26px; font-size: 0.88rem; }
-  .entry-title { font-size: clamp(1.1rem, 3vw, 1.6rem); }
-
-  .gui-btn { font-size: 0.78rem; padding: 5px 10px; }
-  .gui-section-label { font-size: 0.7rem; }
-
-  .side-arrow { padding: 12px 6px; font-size: 1.1rem; }
-  #arrow-left { left: 4px; }
-  #arrow-right { right: 4px; }
-
-  #nav-bar { bottom: 18px; gap: 8px; }
-  #btn-home { font-size: 0.65rem; padding: 3px 8px; }
-  .page-dot { width: 7px; height: 7px; }
-  #page-label { font-size: 0.55rem; }
-
-  .avatar-container { width: 130px; }
-  .skill-grid { grid-template-columns: 1fr; }
-}
+/* ---------- tokens ---------- */
+:root{
+  --bg:#F4F6F8;
+  --bg-2:#E9EDF1;
+  --ink:#10212E;
+  --slate:#35506B;
+  --muted:#5F6E7B;
+  --line:#CBD3DB;
+  --copper:#B4652A;
+  --copper-soft:#F1E2D6;
+  --ok:#2F7D4F;
+  --w:1120px;
+  --font:"Bricolage Grotesque",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font);
+  font-size:17px;line-height:1.55;font-variation-settings:"opsz" 14;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible{outline:2px solid var(--copper);outline-offset:3px;border-radius:2px}
+::selection{background:var(--copper-soft)}
+.wrap{max-width:var(--w);margin:0 auto;padding:0 28px}
+.mono{font-family:var(--mono);font-size:.78rem;letter-spacing:0}
+h1,h2,h3{font-weight:600;line-height:1.1;letter-spacing:-.015em;font-variation-settings:"opsz" 96}
+
+/* ---------- header ---------- */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--copper);box-shadow:0 0 0 4px var(--copper-soft)}
+nav.primary{display:flex;gap:6px}
+nav.primary a{font-family:var(--mono);font-size:.78rem;color:var(--slate);padding:6px 10px;border-radius:4px}
+nav.primary a:hover{background:var(--bg-2);color:var(--ink)}
+@media (max-width:720px){nav.primary{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding:72px 0 56px;border-bottom:1px solid var(--line)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;align-items:center}
+.hero h1{font-size:clamp(2.2rem,4.2vw,3.3rem);font-weight:700;margin:14px 0 18px}
+.hero h1 em{font-style:normal;color:var(--slate);font-weight:400}
+.role{display:inline-flex;align-items:center;gap:10px;color:var(--slate)}
+.role .status{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.lede{font-size:1.12rem;color:var(--slate);max-width:46ch}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:6px;font-weight:600;border:1px solid var(--ink);transition:transform .15s,background .15s}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.primary:hover{background:var(--slate);border-color:var(--slate)}
+.btn.ghost:hover{background:var(--bg-2)}
+.btn:active{transform:translateY(1px)}
+.hero-meta{display:flex;gap:22px;margin-top:30px;color:var(--muted);font-size:.9rem}
+.hero-meta b{display:block;color:var(--ink);font-size:1.25rem;font-weight:600;letter-spacing:-.01em}
+
+/* sequence diagram */
+.seq{position:relative;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 18px 14px;box-shadow:0 1px 0 rgba(16,33,46,.04),0 24px 48px -32px rgba(16,33,46,.25)}
+.seq .bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--muted)}
+.seq .bar .pill{font-family:var(--mono);font-size:.72rem;padding:3px 8px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.seq svg{width:100%;height:auto;display:block;overflow:visible}
+.seq text{font-family:var(--mono);font-size:11.5px;fill:var(--slate)}
+.seq .lane-label{fill:var(--ink);font-family:var(--font);font-weight:600;font-size:13px;letter-spacing:0}
+.seq .lane-sub{fill:var(--muted);font-size:10.5px}
+.seq .lifeline{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
+.seq .me{stroke:var(--copper);stroke-dasharray:none;stroke-width:2}
+.seq .msg line{stroke:var(--slate);stroke-width:1.4;marker-end:url(#arr)}
+.seq .msg.resp line{stroke:var(--ok);stroke-dasharray:4 3;marker-end:url(#arr-ok)}
+.seq .msg .lbl{fill:var(--ink)}
+.seq .msg .code{fill:var(--ok);font-weight:500}
+.seq .act{fill:var(--copper-soft);stroke:var(--copper);stroke-width:1}
+.seq .msg,.seq .act{opacity:0;animation:step 14s infinite}
+.seq .cursor{fill:var(--copper)}
+.seq .cursor circle{animation:none}
+@keyframes step{0%,100%{opacity:0;transform:translateY(4px)}4%{opacity:1;transform:none}92%{opacity:1}}
+/* staggered reveal: each message appears ~1.3s after the previous and the whole thing resets */
+.seq .s1{animation-delay:.2s}.seq .s2{animation-delay:1.5s}.seq .s3{animation-delay:2.8s}.seq .s4{animation-delay:4.1s}.seq .s5{animation-delay:5.4s}.seq .s6{animation-delay:6.7s}.seq .s7{animation-delay:8s}.seq .s8{animation-delay:9.3s}.seq .s9{animation-delay:10.6s}
+.seq .log{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.seq .log span b{color:var(--ok);font-weight:500}
+@media (prefers-reduced-motion:reduce){.seq .msg,.seq .act{animation:none;opacity:1;transform:none}}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}.hero{padding:48px 0 40px}}
+
+/* ---------- sections ---------- */
+section{padding:72px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;margin-bottom:36px;flex-wrap:wrap}
+.sec-head h2{font-size:clamp(1.7rem,3vw,2.3rem)}
+.endpoint{font-family:var(--mono);font-size:.78rem;color:var(--muted);display:inline-flex;gap:10px;align-items:center}
+.endpoint .m{color:var(--copper);font-weight:500}
+.endpoint .c{color:var(--ok)}
+.sec-intro{color:var(--slate);max-width:62ch;font-size:1.05rem;margin:-18px 0 36px}
+
+/* about */
+.about .wrap{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:56px;align-items:start}
+.about p{margin-bottom:1.1em;max-width:62ch}
+.about p:last-child{margin-bottom:0}
+.about .photo{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+.about .photo img{width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;filter:saturate(.9)}
+.about .photo dl{font-size:.92rem}
+.about .photo dt{color:var(--muted);font-size:.78rem;margin-top:8px}
+.about .photo dt:first-child{margin-top:0}
+.about .photo dd{color:var(--ink)}
+.principles{margin-top:28px;border-top:1px solid var(--line)}
+.principles li{list-style:none;padding:14px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:28px 1fr;gap:12px;font-size:.95rem}
+.principles li svg{width:18px;height:18px;margin-top:3px;stroke:var(--copper);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.principles li b{display:block;font-weight:600}
+.principles li span{color:var(--slate)}
+@media (max-width:900px){.about .wrap{grid-template-columns:1fr}}
+
+/* experience timeline */
+.timeline{position:relative;display:grid;gap:0}
+.job{display:grid;grid-template-columns:150px 28px 1fr;gap:0 18px;padding:26px 0}
+.job + .job{border-top:1px solid var(--line)}
+.job .when{font-family:var(--mono);font-size:.78rem;color:var(--muted);padding-top:5px;line-height:1.5}
+.job .when b{display:block;color:var(--ink);font-weight:500}
+.job .rail{position:relative}
+.job .rail::before{content:"";position:absolute;left:13px;top:0;bottom:-27px;width:2px;background:var(--line)}
+.job:last-child .rail::before{bottom:auto;height:50%}
+.job .rail i{position:absolute;left:8px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--slate)}
+.job.current .rail i{background:var(--copper);border-color:var(--copper);box-shadow:0 0 0 4px var(--copper-soft)}
+.job h3{font-size:1.25rem;font-weight:600}
+.job .org{color:var(--slate);margin:2px 0 12px}
+.job ul{padding-left:1.1em;color:var(--ink);max-width:68ch}
+.job li{margin:6px 0}
+.job li::marker{color:var(--copper)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.tag{font-family:var(--mono);font-size:.72rem;color:var(--slate);background:var(--bg-2);padding:3px 8px;border-radius:4px}
+@media (max-width:720px){.job{grid-template-columns:28px 1fr;gap:0 14px}.job .when{grid-column:2;order:-1;padding:0 0 6px}.job .rail{grid-row:1/span 2}}
+
+/* projects */
+.projects-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.proj{background:#fff;border:1px solid var(--line);border-radius:10px;padding:26px;display:flex;flex-direction:column;gap:12px;grid-column:span 4;position:relative;transition:border-color .2s}
+.proj:hover{border-color:var(--slate)}
+.proj.featured{grid-column:span 8;background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.proj.featured .meta,.proj.featured p{color:#B9C6D2}
+.proj.featured .tag{background:#223446;color:#D5DFE8}
+.proj.wide{grid-column:span 6}
+.proj .meta{font-family:var(--mono);font-size:.74rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.proj h3{font-size:1.3rem}
+.proj.featured h3{font-size:clamp(1.6rem,2.6vw,2.1rem);max-width:22ch}
+.proj p{color:var(--slate);font-size:.97rem;max-width:60ch}
+.proj .links{margin-top:auto;padding-top:8px;display:flex;gap:16px;font-size:.9rem;font-weight:600}
+.proj .links a{border-bottom:1px solid currentColor}
+.proj.featured .links a{color:#F0C9A8}
+.schema{font-family:var(--mono);font-size:.74rem;line-height:1.6;background:#0B1822;border:1px solid #223446;border-radius:6px;padding:14px 16px;color:#B9C6D2;overflow:auto;margin-top:6px}
+.schema .k{color:#F0C9A8}.schema .s{color:#9FD3B2}.schema .n{color:#C9B6F2}.schema .c{color:#5F7A90}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media (max-width:980px){.proj,.proj.featured,.proj.wide{grid-column:span 6}}
+@media (max-width:720px){.proj,.proj.featured,.proj.wide{grid-column:span 12}.feat-grid{grid-template-columns:1fr}}
+
+/* stack */
+.stack{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.stack div{padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stack div:nth-child(3n){border-right:0}
+.stack div:nth-last-child(-n+3){border-bottom:0}
+.stack h3{font-size:1rem;margin-bottom:10px}
+.stack ul{list-style:none;color:var(--slate);font-size:.95rem}
+.stack li{padding:3px 0}
+.stack li.lead{color:var(--ink);font-weight:500}
+@media (max-width:900px){.stack{grid-template-columns:1fr 1fr}.stack div:nth-child(3n){border-right:1px solid var(--line)}.stack div:nth-child(2n){border-right:0}.stack div:nth-last-child(-n+3){border-bottom:1px solid var(--line)}.stack div:nth-last-child(-n+2){border-bottom:0}}
+@media (max-width:560px){.stack{grid-template-columns:1fr}.stack div{border-right:0!important;border-bottom:1px solid var(--line)!important}.stack div:last-child{border-bottom:0!important}}
+
+/* talks + contact */
+.talks{display:grid;gap:0;border-top:1px solid var(--line)}
+.talk{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:20px 0;border-bottom:1px solid var(--line)}
+.talk .when{font-family:var(--mono);font-size:.78rem;color:var(--muted);padding-top:4px}
+.talk h3{font-size:1.1rem;font-weight:600}
+.talk p{color:var(--slate);font-size:.95rem}
+@media (max-width:600px){.talk{grid-template-columns:1fr;gap:4px}}
+.contact .wrap{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:48px;align-items:center}
+.contact h2{font-size:clamp(2rem,4vw,3rem);max-width:16ch}
+.contact p{color:var(--slate);margin-top:14px;max-width:48ch}
+.contact-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 22px}
+.contact-card a{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);font-weight:600}
+.contact-card a:last-child{border-bottom:0}
+.contact-card a small{font-family:var(--mono);font-size:.76rem;color:var(--muted);font-weight:400}
+.contact-card a:hover small{color:var(--copper)}
+@media (max-width:900px){.contact .wrap{grid-template-columns:1fr}}
+footer{padding:28px 0 40px;color:var(--muted);font-size:.85rem}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--ink);border-color:var(--ink)}
 </style>
 </head>
 <body>
 
-<!-- ==============================
-     STARFIELD CANVAS
-     ============================== -->
-<canvas id="starfield"></canvas>
-<canvas id="cybergrid" class="active"></canvas>
-<button id="bg-toggle-mobile" title="Toggle background">BG &#8635;</button><button id="bg-info-btn" title="About this background">?</button>
-<button id="refresh-btn" title="Refresh page" onclick="location.reload()">&#8635;</button>
-<div id="bg-info-popup"></div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="dot" aria-hidden="true"></span>Seth Timmons</a>
+    <nav class="primary" aria-label="Sections">
+      <a href="#about">/about</a>
+      <a href="#experience">/experience</a>
+      <a href="#projects">/projects</a>
+      <a href="#stack">/stack</a>
+      <a href="#contact">/contact</a>
+    </nav>
+  </div>
+</header>
 
-<!-- ==============================
-     LOADING SCREEN
-     ============================== -->
-<div id="loading">
-  <div id="loading-text">
-    <div class="loading-line" data-delay="0">&gt; Initializing Hitchhiker's Guide v42.0...</div>
-    <div class="loading-line" data-delay="500">&gt; Calibrating Infinite Improbability Drive...</div>
-    <div class="loading-line" data-delay="1000">&gt; Locating nearest towel... [FOUND]</div>
-    <div class="loading-line" data-delay="1500">&gt; Loading Earth entry: "Mostly Harmless"...</div>
-    <div class="loading-line" data-delay="2000">&gt; Revising entry: "Mostly Harmless" &rarr; "Surprisingly Competent"</div>
-    <div class="loading-line" data-delay="2700">&gt; Ready. Remember: DON'T PANIC.</div>
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <div class="role"><span class="status" aria-hidden="true"></span>API Integrations Engineer</div>
+      <h1>I make systems that were never meant to talk <em>exchange data reliably.</em></h1>
+      <p class="lede">Thirteen years of connecting ERPs, campus platforms, EdTech workflow engines and third-party APIs — designing the contracts, building the pipelines, and owning them in production.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#projects">See the work</a>
+        <a class="btn ghost" href="#contact">Get in touch</a>
+      </div>
+      <div class="hero-meta">
+        <div><b>13+ yrs</b>integration &amp; infrastructure</div>
+        <div><b>2</b>conference talks</div>
+        <div><b>Remote</b>Idaho, Mountain time</div>
+      </div>
+    </div>
+
+    <figure class="seq" aria-label="Animated sequence diagram of a typical integration: a client request handled by Seth's integration layer, which queries the ERP, calls a third-party API, and returns a response.">
+      <div class="bar">
+        <span class="pill">sequence · enrollment sync</span>
+        <span class="pill">replaying</span>
+      </div>
+      <svg viewBox="0 0 560 336" role="img" aria-hidden="true">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#35506B"/></marker>
+          <marker id="arr-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2F7D4F"/></marker>
+        </defs>
+        <!-- lanes at x = 60, 200, 360, 500 -->
+        <g class="lanes">
+          <text class="lane-label" x="60" y="18" text-anchor="middle">Client</text>
+          <text class="lane-sub" x="60" y="32" text-anchor="middle">college portal</text>
+          <text class="lane-label" x="200" y="18" text-anchor="middle">Integration layer</text>
+          <text class="lane-sub" x="200" y="32" text-anchor="middle">that's me</text>
+          <text class="lane-label" x="360" y="18" text-anchor="middle">ERP / SIS</text>
+          <text class="lane-sub" x="360" y="32" text-anchor="middle">Colleague · Banner</text>
+          <text class="lane-label" x="500" y="18" text-anchor="middle">Third-party API</text>
+          <text class="lane-sub" x="500" y="32" text-anchor="middle">messaging</text>
+          <line class="lifeline" x1="60" y1="42" x2="60" y2="326"/>
+          <line class="lifeline me" x1="200" y1="42" x2="200" y2="326"/>
+          <line class="lifeline" x1="360" y1="42" x2="360" y2="326"/>
+          <line class="lifeline" x1="500" y1="42" x2="500" y2="326"/>
+        </g>
+
+        <!-- activation on integration layer -->
+        <rect class="act s1" x="195" y="60" width="10" height="252" rx="2"/>
+
+        <g class="msg s1"><line x1="60" y1="70" x2="192" y2="70"/><text class="lbl" x="130" y="63" text-anchor="middle">POST /enrollments</text></g>
+        <g class="msg s2"><rect x="210" y="86" width="196" height="18" rx="3" fill="#F4F6F8"/><text x="216" y="99" class="lbl">validate · map ids · idempotency key</text></g>
+        <g class="msg s3"><line x1="205" y1="128" x2="357" y2="128"/><text class="lbl" x="282" y="121" text-anchor="middle">GET /students/{id}</text></g>
+        <g class="msg resp s4"><line x1="357" y1="156" x2="208" y2="156"/><text x="282" y="149" text-anchor="middle"><tspan class="code">200</tspan> student record</text></g>
+        <g class="msg s5"><line x1="205" y1="186" x2="357" y2="186"/><text class="lbl" x="282" y="179" text-anchor="middle">POST /registrations</text></g>
+        <g class="msg resp s6"><line x1="357" y1="214" x2="208" y2="214"/><text x="282" y="207" text-anchor="middle"><tspan class="code">201</tspan> registration</text></g>
+        <g class="msg s7"><line x1="205" y1="244" x2="497" y2="244"/><text class="lbl" x="352" y="237" text-anchor="middle">POST /messages · SMS confirmation</text></g>
+        <g class="msg resp s8"><line x1="497" y1="272" x2="208" y2="272"/><text x="352" y="265" text-anchor="middle"><tspan class="code">202</tspan> queued</text></g>
+        <g class="msg resp s9"><line x1="195" y1="304" x2="63" y2="304"/><text x="130" y="297" text-anchor="middle"><tspan class="code">201</tspan> enrollment + receipt</text></g>
+      </svg>
+      <figcaption class="log">
+        <span>retries: exponential backoff</span>
+        <span>errors: logged with correlation id</span>
+        <span>result: <b>consistent on both sides</b></span>
+      </figcaption>
+    </figure>
   </div>
 </div>
 
-<!-- ==============================
-     COVER (Terminal integrated)
-     ============================== -->
-<div id="cover-wrapper">
-  <div id="cover">
-    <div class="cover-border-top"></div>
-    <div class="cover-border-bottom"></div>
-    <div id="cover-terminal">
-      <div id="bg-bar-toggle">
-        <span class="toggle-arrow">&#9650;</span>
-        <span>LET ME PLAY WITH THE BACKGROUND</span>
+<!-- ================= ABOUT ================= -->
+<section class="about" id="about">
+  <div class="wrap">
+    <div>
+      <div class="sec-head" style="margin-bottom:24px">
+        <h2>The job is making the data agree.</h2>
+        <span class="endpoint"><span class="m">GET</span>/about <span class="c">200</span></span>
       </div>
-      <div class="cover-header">
-        <span class="cover-title">DON'T PANIC</span>
-      </div>
-      <div class="terminal-body" id="terminal-output"></div>
-      <div class="terminal-input-row">
-        <span class="terminal-prompt">hitchhiker@guide:~$&nbsp;</span>
-        <input type="text" id="terminal-input" spellcheck="false" autocomplete="off" autofocus>
-      </div>
+      <p>I'm Seth. I build and run the integration layer between systems that each believe they are the source of truth: student information systems, ERPs, workflow engines, payment and messaging providers, and the custom apps people actually use every day.</p>
+      <p>Most of my career was at Idaho State University, where I went from a one-person web shop to leading the Ellucian Ethos integration initiative across the campus's enterprise systems. Since 2025 I've been at DualEnroll, engineering the workflows and integrations that move dual-enrollment students between high schools, colleges and their SIS platforms.</p>
+      <p>I care about contracts and failure modes more than frameworks. If an integration can't be replayed, observed and explained at 3 a.m., it isn't done.</p>
 
-      <!-- GUI Panel -->
-      <div id="gui-toggle">
-        <span class="toggle-arrow">&#9660;</span>
-        <span>ENABLE GUI</span>
-      </div>
-      <div id="gui-panel">
-        <div class="gui-inner">
-          <div class="gui-section-label">Resume &amp; Info</div>
-          <div class="gui-buttons">
-            <button class="gui-btn" data-cmd="hats"><i class="btn-icon">&#9812;</i>Hats</button>
-            <button class="gui-btn" data-cmd="skills"><i class="btn-icon">&#9881;</i>Skills</button>
-            <button class="gui-btn" data-cmd="workexp"><i class="btn-icon">&#9992;</i>Work History</button>
-            <button class="gui-btn" data-cmd="projects"><i class="btn-icon">&#9733;</i>Projects</button>
-            <button class="gui-btn" data-cmd="presentations"><i class="btn-icon">&#9835;</i>Presentations</button>
-            <button class="gui-btn" data-cmd="experiments"><i class="btn-icon">&#9883;</i>Experiments</button>
-          </div>
+      <ul class="principles">
+        <li><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg><div><b>Idempotent by default</b><span>Every write carries a key; every retry is safe. Duplicate records are a design bug, not an ops problem.</span></div></li>
+        <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><b>Observable end to end</b><span>Correlation ids from the first request to the last webhook, so root cause takes minutes instead of a war room.</span></div></li>
+        <li><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h16M10 4v16"/></svg><div><b>Schema is the conversation</b><span>Field mappings, enums and edge cases written down and versioned before code is, so both sides agree on what "enrolled" means.</span></div></li>
+      </ul>
+    </div>
 
-          <div class="gui-section-label">Explore</div>
-          <div class="gui-buttons">
-            <button class="gui-btn" data-cmd="cat 300"><i class="btn-icon">&#128049;</i>Cat</button>
-            <button class="gui-btn" data-cmd="dog 300"><i class="btn-icon">&#128054;</i>Dog</button>
-            <button class="gui-btn" data-cmd="pokemon"><i class="btn-icon">&#9889;</i>Pokemon</button>
-            <button class="gui-btn" data-cmd="space"><i class="btn-icon">&#127776;</i>Space</button>
-            <button class="gui-btn" data-cmd="trivia"><i class="btn-icon">&#10068;</i>Trivia</button>
-            <button class="gui-btn" data-cmd="advice"><i class="btn-icon">&#128161;</i>Advice</button>
-            <button class="gui-btn" data-cmd="fact"><i class="btn-icon">&#8734;</i>Fact</button>
-            <button class="gui-btn" data-cmd="vogon"><i class="btn-icon">&#128216;</i>Vogon Poetry</button>
-          </div>
+    <aside class="photo" aria-label="Quick facts">
+      <img src="assets/profile.jpg" alt="Seth Timmons" width="120" height="120">
+      <dl>
+        <dt>Currently</dt><dd>Workflow &amp; Integrations Engineer, DualEnroll</dd>
+        <dt>Based</dt><dd>Southeast Idaho · remote</dd>
+        <dt>Domains</dt><dd>EdTech, higher-ed ERP, SMS/commerce</dd>
+        <dt>Off hours</dt><dd>Tabletop worldbuilding, Raspberry Pi, Android games</dd>
+      </dl>
+    </aside>
+  </div>
+</section>
 
-          <div class="gui-section-label">Essentials</div>
-          <div class="gui-buttons">
-            <button class="gui-btn" data-cmd="42"><i class="btn-icon">&#10024;</i>42</button>
-            <button class="gui-btn" data-cmd="towel"><i class="btn-icon">&#127856;</i>Towel</button>
-            <button class="gui-btn" data-cmd="improbability"><i class="btn-icon">&#9851;</i>Improbability</button>
-            <button class="gui-btn" data-cmd="whoami"><i class="btn-icon">&#128269;</i>Who Am I</button>
-            <button class="gui-btn" data-cmd="guide"><i class="btn-icon">&#128214;</i>Open Guide</button>
-          </div>
+<!-- ================= EXPERIENCE ================= -->
+<section id="experience">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Experience</h2>
+      <span class="endpoint"><span class="m">GET</span>/experience?sort=desc <span class="c">200</span></span>
+    </div>
+
+    <div class="timeline">
+      <article class="job current">
+        <div class="when"><b>Apr 2025 — now</b>Remote</div>
+        <div class="rail"><i></i></div>
+        <div>
+          <h3>Workflow &amp; Integrations Engineer</h3>
+          <div class="org">DualEnroll · dual-enrollment platform for colleges and high schools</div>
+          <ul>
+            <li>Engineer the workflow and integration pipelines that move student, course and registration data between DualEnroll, partner colleges and their SIS/ERP systems.</li>
+            <li>Build and QA MCP tooling around the Workflow Builder and Insights APIs: systematic endpoint exploration under scoped tokens, validation of workflow definitions, and defect reports with reproducible cases.</li>
+            <li>Configure college-specific workflows and translate institutional policy into step definitions, outcomes and dependencies.</li>
+          </ul>
+          <div class="tags"><span class="tag">REST</span><span class="tag">Rails APIs</span><span class="tag">MCP</span><span class="tag">Postman</span><span class="tag">Claude / Anthropic API</span><span class="tag">Playwright</span></div>
         </div>
-      </div>
+      </article>
+
+      <article class="job">
+        <div class="when"><b>Apr 2018 — Mar 2025</b>Pocatello, ID</div>
+        <div class="rail"><i></i></div>
+        <div>
+          <h3>IT Application Analyst</h3>
+          <div class="org">Idaho State University · Information Technology Services</div>
+          <ul>
+            <li>Led the Ellucian Ethos integration initiative, bridging the university's inconsistent enterprise systems through the Ethos data model and custom connectors.</li>
+            <li>Delivered the unified campus portal (Experience) as native iOS and Android apps, and the campus-wide asset management implementation under strict audit requirements.</li>
+            <li>Owned application analysis, log retrieval and root-cause analysis for critical services, including systems tied to campus emergency notifications; administered the supporting MySQL databases.</li>
+          </ul>
+          <div class="tags"><span class="tag">Ellucian Ethos</span><span class="tag">Colleague · Banner</span><span class="tag">GraphQL</span><span class="tag">MySQL</span><span class="tag">Oracle / PL-SQL</span><span class="tag">Heroku</span></div>
+        </div>
+      </article>
+
+      <article class="job">
+        <div class="when"><b>Jun 2015 — Apr 2018</b>Pocatello, ID</div>
+        <div class="rail"><i></i></div>
+        <div>
+          <h3>IT Computer Analyst</h3>
+          <div class="org">Idaho State University · the "all-purpose UNIX, programming and database guy"</div>
+          <ul>
+            <li>Built full-stack LAMP applications from scratch, including FiDo, a fiber and copper plant management system tracking every building, cabinet, panel, port, strand and pathway on campus.</li>
+            <li>Developed custom integrations for Cisco Jabber, BlueCat IPAM, Nagios XI and Pinnacle telecom billing.</li>
+          </ul>
+          <div class="tags"><span class="tag">PHP</span><span class="tag">MySQL</span><span class="tag">Bash</span><span class="tag">Linux (RHEL · Ubuntu)</span><span class="tag">Nagios</span></div>
+        </div>
+      </article>
+
+      <article class="job">
+        <div class="when"><b>Feb 2012 — Jun 2015</b>Pocatello, ID</div>
+        <div class="rail"><i></i></div>
+        <div>
+          <h3>Web Application Developer</h3>
+          <div class="org">Idaho State University</div>
+          <ul>
+            <li>One-person full-stack operation: server design and administration, relational schema design, and all client- and server-side code for departmental applications.</li>
+          </ul>
+          <div class="tags"><span class="tag">LAMP</span><span class="tag">JavaScript</span><span class="tag">Bootstrap</span><span class="tag">Perl</span></div>
+        </div>
+      </article>
     </div>
   </div>
-</div>
+</section>
 
-<!-- ==============================
-     BOOK (Guide entry pages)
-     ============================== -->
-<div id="book-wrapper">
-  <div id="book-frame">
-    <div class="book-border-top"></div>
-    <div class="book-border-bottom"></div>
-    <div id="book">
-
-    <!-- PAGE 0: ABOUT -->
-    <div class="page" id="pg-about">
-      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Earth Edition &mdash; Entry #7,742,112</div>
-      <div class="entry-title">Seth Timmons</div>
-      <div class="entry-subtitle">Classification: Surprisingly Competent &middot; Sector: Sol III (Earth) &middot; Region: Classified</div>
-      <div class="entry-body">
-        <div class="avatar-container">
-          <img src="digital_avatar.png" alt="Seth Timmons — Digital Likeness">
-          <img src="human_profile.jpg" alt="Seth Timmons — Actual Human" class="avatar-real">
-          <div class="avatar-caption">Fig. 1: <span class="avatar-hint">Artist's</span> rendering of his last appearance.</div>
-        </div>
-        <p><span class="highlight">Seth Timmons</span> is a bipedal carbon-based life form primarily stationed in the digital infrastructure of a small Earth-based educational technology concern called <span class="highlight">DualEnroll</span>, where he holds the title of <em>Workflow and Integrations Engineer</em>&mdash;a designation the Guide's editorial department required three attempts and a stiff Pan Galactic Gargle Blaster to properly file.</p>
-
-        <p>His primary function involves convincing disparate computer systems to communicate with one another, a task roughly as straightforward as mediating a territorial dispute between a Vogon constructor fleet and a bypass-averse planet. He achieves this through an arsenal of automation pipelines, integration frameworks, and what colleagues describe as "an alarming tolerance for YAML."</p>
-
-        <div class="guide-note">
-          <strong>Editor's Note:</strong> Despite initial survey classifications, the Guide's research department has revised the 'Mostly Harmless' designation to 'Surprisingly Competent,' citing over thirteen Earth-years of continuous infrastructure management and an improbable ability to debug production issues at 3 AM while maintaining conversational pleasantness.
-        </div>
-
-        <p>Prior to his current posting, Timmons spent <span class="highlight">thirteen years</span> at a sprawling Earth institution known as <em>Idaho State University</em>, where he rose through the ranks from a one-man development operation to a senior analyst responsible for enterprise integrations, application architecture, and the general well-being of approximately everything with a blinking light.</p>
-
-        <p>He is known to enjoy tabletop role-playing games (a curious Earth ritual involving dice and collective storytelling), Raspberry Pi projects (small computing devices named after neither raspberries nor pies), and building tools that help people practice freestyle rapping (an Earth art form the Guide's cultural department is still attempting to classify).</p>
-
-        <p class="rating">RELIABILITY RATING: &#9733;&#9733;&#9733;&#9733;&#9734; &middot; PANIC FACTOR: Low (usually) &middot; TOWEL STATUS: Always knows where it is</p>
-      </div>
+<!-- ================= PROJECTS ================= -->
+<section id="projects">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Selected work</h2>
+      <span class="endpoint"><span class="m">GET</span>/projects?featured=true <span class="c">200</span></span>
     </div>
+    <p class="sec-intro">A mix of enterprise integrations I owned end to end and things I built because I wanted them to exist.</p>
 
-    <!-- PAGE 1: SKILLS & HATS -->
-    <div class="page" id="pg-skills">
-      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Equipment & Designations Catalog</div>
-      <div class="entry-title">Hats &amp; Equipment</div>
-      <div class="entry-subtitle">Known tools, technologies, and vocational designations of specimen TIMMONS, SETH</div>
-      <div class="entry-body">
-        <p>The Guide notes that this particular Earthling wears an <em>improbable number of hats</em>, none of them actual hats. The following vocational designations have been catalogued by the Guide's Field Research Division:</p>
+    <div class="projects-grid">
 
-        <div class="guide-note">
-          <strong>Vocational Designations (Hats):</strong>
-          Workflow &amp; Integrations Engineer &middot; Application Analyst &middot; Computer Analyst &middot; Database Administrator &middot; Full Stack Developer &middot; Front-End Engineer &middot; Server &amp; System Administrator &middot; Web Developer
+      <article class="proj featured">
+        <div class="feat-grid">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="meta"><span>personal · 2026</span><span>worldbuilding as code</span></div>
+            <h3>Omniverse — a version-controlled multiverse</h3>
+            <p>A shared tabletop setting kept as a git repository and Obsidian vault. Every place, person and faction is a note with a stable ID; everything that happens is an event with a schema: type, severity, where, participants, visibility, and deltas with explicit from/to values.</p>
+            <p>Campaigns fork the canon at a point in time and play inside their own instance. When a session matters, qualifying events are proposed upstream as a pull request — replayed against canon in world-date order, and rejected as a "reality rift" if a <code style="font-family:var(--mono);font-size:.85em">from</code> value no longer matches. An AI dungeon master reads state from the files, logs seeded dice rolls, and never edits canon directly.</p>
+            <div class="links"><a href="#contact">Ask me about it</a></div>
+          </div>
+          <pre class="schema" aria-label="Example Omniverse event"><span class="c"># Events/1247/harrowmere-siege.md</span>
+<span class="k">id</span>: <span class="s">harrowmere.event.siege-lifted</span>
+<span class="k">type</span>: <span class="s">conflict.resolved</span>
+<span class="k">severity</span>: <span class="n">4</span>
+<span class="k">where</span>: <span class="s">[[harrowmere.place.keep]]</span>
+<span class="k">participants</span>:
+  - <span class="s">[[harrowmere.person.margrave-ilse]]</span>
+  - <span class="s">[[party.ashfall-company]]</span>
+<span class="k">visibility</span>: <span class="s">public</span>
+<span class="k">canon</span>: <span class="s">local</span>   <span class="c"># becomes `merged` via PR</span>
+<span class="k">deltas</span>:
+  - <span class="k">path</span>: <span class="s">keep.ruler</span>
+    <span class="k">from</span>: <span class="s">harrowmere.person.castellan-roux</span>
+    <span class="k">to</span>:   <span class="s">harrowmere.person.margrave-ilse</span>
+<span class="k">source</span>: <span class="s">instance:ashfall-s03</span>
+<span class="k">rolls</span>: <span class="s">seed=8f3a1c · 2d6 → 9</span></pre>
         </div>
+      </article>
 
-        <p>The following is an incomplete catalog of implements this entity has been observed wielding. Reliability ratings are assigned by the Guide's Testing Department (which was dissolved in a budget restructuring and subsequently reconstituted as a vending machine on Betelgeuse Seven).</p>
+      <article class="proj">
+        <div class="meta"><span>Idaho State · 2018–2025</span></div>
+        <h3>Ellucian Ethos integration initiative</h3>
+        <p>Led the move of campus integrations onto Ethos's canonical data model, replacing point-to-point scripts with governed connectors between Colleague, Banner-era systems and departmental apps.</p>
+        <div class="tags"><span class="tag">Ethos</span><span class="tag">GraphQL</span><span class="tag">data model</span></div>
+      </article>
 
-        <div class="skill-grid">
-          <div class="skill-cat">Planetary Operating Systems</div>
-          <div class="skill-item">Linux (Ubuntu, RHEL, Fedora) &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Windows / Mac &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+      <article class="proj wide">
+        <div class="meta"><span>DualEnroll · 2025–</span></div>
+        <h3>Workflow Builder &amp; Insights API tooling</h3>
+        <p>MCP integrations for exploring, validating and configuring dual-enrollment workflows. Systematic QA under superuser and college-scoped tokens surfaced scoping gaps, catalog mismatches, false-positive validation errors and a parameter-casing bug in generated links — each filed with a reproducible case.</p>
+        <div class="tags"><span class="tag">MCP</span><span class="tag">REST</span><span class="tag">QA</span><span class="tag">Rails</span></div>
+      </article>
 
-          <div class="skill-cat">Data Repositories</div>
-          <div class="skill-item">MySQL &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Oracle / PL/SQL &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+      <article class="proj wide">
+        <div class="meta"><span>independent · 2026</span><span>leaandsea.mobilemarkets.app</span></div>
+        <h3>Mobile Markets</h3>
+        <p>A hosted ordering platform for independent delivery vendors, launched with a meat-delivery van as the first customer. Orders arrive through a form and are forwarded to the vendor; order, vendor and login messages run through Twilio, including the A2P 10DLC campaign registration that makes the SMS actually deliver.</p>
+        <div class="tags"><span class="tag">Twilio</span><span class="tag">SMS / A2P 10DLC</span><span class="tag">web</span></div>
+        <div class="links"><a href="https://leaandsea.mobilemarkets.app" rel="noopener">Visit the storefront</a></div>
+      </article>
 
-          <div class="skill-cat">Incantation Languages (Scripting)</div>
-          <div class="skill-item">Bash / Shell &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Python &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+      <article class="proj wide">
+        <div class="meta"><span>Idaho State · 2018–2025</span></div>
+        <h3>Experience campus portal</h3>
+        <p>A unified portal for every member of the campus community, shipped as native apps on the App Store and Google Play, fed by the same integration layer as the rest of the university.</p>
+        <div class="tags"><span class="tag">Ellucian Experience</span><span class="tag">iOS · Android</span></div>
+      </article>
 
-          <div class="skill-cat">Frontend Instrumentation</div>
-          <div class="skill-item">HTML5 / CSS3 / JavaScript &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">jQuery / AJAX &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Bootstrap / Foundation &#9733;&#9733;&#9733;&#9733;&#9734;</div>
+      <article class="proj wide">
+        <div class="meta"><span>Idaho State · 2015–2018</span></div>
+        <h3>FiDo — fiber &amp; copper plant management</h3>
+        <p>A database-driven system modelling the physical network: buildings, closets, cabinets, panels, ports, strands and pathways. If it carried a signal, FiDo knew where it went. Presented at WestNet 2015 and 2018.</p>
+        <div class="tags"><span class="tag">LAMP</span><span class="tag">data modelling</span></div>
+      </article>
 
-          <div class="skill-cat">Backend Propulsion</div>
-          <div class="skill-item">PHP &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Ruby on Rails &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-          <div class="skill-item">Perl &#9733;&#9733;&#9733;&#9734;&#9734;</div>
+      <article class="proj wide">
+        <div class="meta"><span>Idaho State · 2018–2025</span></div>
+        <h3>Campus asset management</h3>
+        <p>Consolidated competing sources of truth into one asset tracking system across the university, under strict audit requirements and with a long list of stakeholders who each had their own spreadsheet.</p>
+        <div class="tags"><span class="tag">integration</span><span class="tag">audit</span></div>
+      </article>
 
-          <div class="skill-cat">Integration Protocols</div>
-          <div class="skill-item">REST APIs &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">GraphQL &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-          <div class="skill-item">Postman &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <article class="proj wide">
+        <div class="meta"><span>personal</span></div>
+        <h3>CYPHER &amp; a shelf of Android games</h3>
+        <p>CYPHER pairs random words with freestyle beats for rap practice. It sits alongside a pipeline of small Android games built with an automated APK build bot, each versioned and shipped to a shared drive on command.</p>
+        <div class="tags"><span class="tag">Android</span><span class="tag">PWA</span><span class="tag">CI</span></div>
+        <div class="links"><a href="Hitchhikers%20Guide/">Previous portfolio: the Hitchhiker's Guide</a></div>
+      </article>
 
-          <div class="skill-cat">AI &amp; Context Engineering</div>
-          <div class="skill-item">Claude / Anthropic API &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Context Engineering &amp; Prompt Design &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Claude Skills &amp; Custom Commands &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-
-          <div class="skill-cat">Notable Galactic Systems</div>
-          <div class="skill-item">Ellucian Colleague / Banner (ERP) &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-          <div class="skill-item">Ellucian Ethos / Data Model &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <div class="skill-item">Terminal Four / WordPress (CMS) &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-          <div class="skill-item">Heroku &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-
-          <div class="skill-cat">Testing &amp; Accessibility</div>
-          <div class="skill-item">Playwright &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-          <div class="skill-item">Web Accessibility Standards (WCAG) &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-
-          <div class="skill-cat">DevOps &amp; Version Control</div>
-          <div class="skill-item">Git / GitHub &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-
-          <div class="skill-cat">Recreational Tinkering</div>
-          <div class="skill-item">Raspberry Pi Projects &#9733;&#9733;&#9733;&#9733;&#9734;</div>
-          <div class="skill-item">TensorFlow (Machine Learning) &#9733;&#9733;&#9733;&#9734;&#9734;</div>
-          <div class="skill-item">Idle Games &#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        </div>
-
-        <div class="guide-note">
-          <strong>Field Note:</strong> Subject's preferred text editor is Vi. When asked why, subject mumbled something about <code>:wq</code> being "faster than any GUI" before disappearing into a terminal window. The Guide's UX department remains skeptical but acknowledges the results speak for themselves.
-        </div>
-      </div>
     </div>
+  </div>
+</section>
 
-    <!-- PAGE 2: WORK HISTORY -->
-    <div class="page" id="pg-work">
-      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Galactic Travel Log</div>
-      <div class="entry-title">Travel Log</div>
-      <div class="entry-subtitle">A chronological record of assignments across various sectors of the galaxy</div>
-      <div class="entry-body">
-        <p>The following is an abridged travel log documenting the professional assignments of specimen Timmons, as recorded by the Guide's Bureau of Interstellar Employment.</p>
-
-        <div class="timeline-entry">
-          <div class="role">Workflow &amp; Integrations Engineer</div>
-          <div class="org">DualEnroll &middot; EdTech Sector</div>
-          <div class="period">Apr 2025 &mdash; Present &middot; Remote Operations</div>
-          <div class="desc">Currently stationed at DualEnroll, an educational technology concern, where he engineers the workflows and integration pipelines that keep the machinery of dual enrollment humming across the galaxy&mdash;or at least across the continental United States, which to be fair is a sufficiently complex system to keep any sentient being occupied.</div>
-        </div>
-
-        <div class="timeline-entry">
-          <div class="role">Information Technology Application Analyst</div>
-          <div class="org">Idaho State University &middot; Higher Education Sector</div>
-          <div class="period">Apr 2018 &mdash; Mar 2025 &middot; 7 years</div>
-          <div class="desc">Led the Ellucian Ethos integration initiative, bridging the gaps between diverse and inconsistent enterprise systems via custom integrations. Responsible for application analysis, log retrieval, root cause analysis, and MySQL database administration integrated with critical university services including emergency systems. The Guide notes this role involved "making things talk to each other that desperately did not want to."</div>
-        </div>
-
-        <div class="timeline-entry">
-          <div class="role">IT Computer Analyst</div>
-          <div class="org">Idaho State University</div>
-          <div class="period">Jun 2015 &mdash; Apr 2018 &middot; 2 years 11 months</div>
-          <div class="desc">Known among colleagues as the "All-Purpose UNIX, Programming and Database Guy"&mdash;a title that, while not officially sanctioned, proved alarmingly accurate. Built full-stack LAMP applications from scratch including a fiber optic plant management system that tracked every building, location, cabinet, panel, port, strand, and cable pathway on campus. Also developed custom integrations for Cisco Jabber, Bluecats IPAM, Nagios XI, and Pinnacle.</div>
-        </div>
-
-        <div class="timeline-entry">
-          <div class="role">Web Application Developer</div>
-          <div class="org">Idaho State University</div>
-          <div class="period">Feb 2012 &mdash; Jun 2015 &middot; 3 years 5 months</div>
-          <div class="desc">One-man full stack operation. Server design, creation, installation, and administration. Relational database design and administration. All client and server-side programming. The Guide's assessment: "Impressively self-sufficient. Also possibly sleep-deprived."</div>
-        </div>
-
-        <div class="guide-note">
-          <strong>Bureau Note:</strong> Total documented service: 13+ Earth-years of continuous infrastructure management. The Bureau rates this duration as "commendable" and "mildly terrifying."
-        </div>
-
-        <p style="margin-top:15px;"><strong>Recorded Transmissions (Presentations):</strong></p>
-        <div class="timeline-entry" style="margin-top:8px;">
-          <div class="role">WestNet Conference &mdash; NOAA, Boulder, Colorado</div>
-          <div class="period">June 2018</div>
-          <div class="desc">"FiDo &mdash; Implementation and Lessons Learned"</div>
-        </div>
-        <div class="timeline-entry">
-          <div class="role">WestNet Conference &mdash; BSU, Boise, Idaho</div>
-          <div class="period">June 2015</div>
-          <div class="desc">"Managing Copper and Fiber Optic Plant Facilities With Dynamic Web Applications"</div>
-        </div>
-      </div>
+<!-- ================= STACK ================= -->
+<section id="stack">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Stack</h2>
+      <span class="endpoint"><span class="m">GET</span>/stack <span class="c">200</span></span>
     </div>
-
-    <!-- PAGE 3: PROJECTS & EXPERIMENTS -->
-    <div class="page" id="pg-projects">
-      <div class="page-header">The Hitchhiker's Guide to the Galaxy &mdash; Field Reports &amp; Experiments</div>
-      <div class="entry-title">Field Reports</div>
-      <div class="entry-subtitle">Notable discoveries, constructions, and dubious experiments</div>
-      <div class="entry-body">
-        <p>The following field reports have been filed with the Guide's editorial office. Some are sanctioned. Others are classified under "seemed like a good idea at the time."</p>
-
-        <p style="font-weight:700; color: var(--page-header); margin-top: 15px;">SANCTIONED PROJECTS</p>
-
-        <div class="project-item">
-          <div class="name">Experience Campus Portal Implementation</div>
-          <div class="detail">Designed and deployed a unified portal experience for all campus community members. Available as native applications in both the Apple Store and Google Play Store. The Guide notes it was "received with extremely positive reception," which in higher education is roughly equivalent to a standing ovation on Magrathea.</div>
-        </div>
-
-        <div class="project-item">
-          <div class="name">Asset Management Implementation</div>
-          <div class="detail">Consolidated sources of truth across an entire university campus to create a unified asset tracking system. A monumentally complex task involving strict audit requirements and diverse stakeholder needs. Described as "a resounding success," which the Guide's editors confirm is not sarcasm for once.</div>
-        </div>
-
-        <div class="project-item">
-          <div class="name">Fiber Optic Plant Management System</div>
-          <div class="detail">A database-driven web application tracking every building, location, storage unit, cabinet, panel, port, fiber optic strand, and cable pathway on campus. If it carried a signal, this system knew about it. Presented at WestNet 2015.</div>
-        </div>
-
-        <div class="project-item">
-          <div class="name">Custom LAMP Stack Applications (Assorted)</div>
-          <div class="detail">A constellation of applications including: billing documentation walkthroughs, IP-phone FAC code generators, mail center management tools, ticketing system portals, and a CSS framework called Pagebuilder. All built on Linux, Apache, MySQL, and PHP with Bootstrap frontends and dynamic data visualizations.</div>
-        </div>
-
-        <p style="font-weight:700; color: var(--page-header); margin-top: 20px;">UNSANCTIONED EXPERIMENTS</p>
-
-        <div class="project-item">
-          <div class="name">The Game Master's Database</div>
-          <div class="detail">A hand-built resource collecting and organizing a plethora of D&amp;D resources from various corners of the web. The Guide's recreational activities department rates this as "evidence of a well-organized mind applied to fantastical ends."</div>
-        </div>
-
-        <div class="project-item">
-          <div class="name">Just Freestyle</div>
-          <div class="detail">A tool using open APIs to generate sets of random words paired with random freestyle beats from YouTube. The end result: a place people go to practice freestyle rapping. The Guide's cultural department is <em>still</em> attempting to classify this art form.</div>
-        </div>
-
-        <div class="project-item">
-          <div class="name">This Very Guide</div>
-          <div class="detail">You're reading it. A Hitchhiker's Guide-themed interactive portfolio with a working terminal, live API integrations, and an unreasonable number of Douglas Adams references. The Guide rates it: "Meta, but in a good way."</div>
-        </div>
-
-        <div class="guide-note">
-          <strong>Editor's Note:</strong> The subject's approach to projects follows a consistent pattern: identify a problem, build an elegant solution, and then build three more things because they thought of something cool along the way. The Guide's productivity analysts find this both admirable and slightly exhausting.
-        </div>
-      </div>
+    <p class="sec-intro">Lead items are what I'd reach for first on a new integration; the rest I've shipped with in production.</p>
+    <div class="stack">
+      <div><h3>APIs &amp; protocols</h3><ul><li class="lead">REST · OpenAPI</li><li class="lead">Webhooks &amp; event-driven sync</li><li>GraphQL</li><li>MCP (Model Context Protocol)</li><li>Postman · Playwright</li></ul></div>
+      <div><h3>Enterprise systems</h3><ul><li class="lead">Ellucian Ethos data model</li><li>Ellucian Colleague · Banner</li><li>Ellucian Experience</li><li>Terminal Four · WordPress</li><li>Twilio</li></ul></div>
+      <div><h3>Languages</h3><ul><li class="lead">Python</li><li class="lead">PHP</li><li>Ruby on Rails</li><li>JavaScript / HTML / CSS</li><li>Bash · Perl</li></ul></div>
+      <div><h3>Data</h3><ul><li class="lead">MySQL</li><li>Oracle · PL/SQL</li><li>Schema &amp; mapping design</li><li>Data visualisation (D3)</li></ul></div>
+      <div><h3>Platforms &amp; ops</h3><ul><li class="lead">Linux (RHEL, Ubuntu, Fedora)</li><li>Heroku</li><li>Git · GitHub</li><li>Nagios XI</li><li>Raspberry Pi</li></ul></div>
+      <div><h3>AI-assisted engineering</h3><ul><li class="lead">Claude / Anthropic API</li><li class="lead">MCP server design &amp; QA</li><li>Context engineering &amp; prompt design</li><li>Claude skills &amp; custom commands</li><li>TensorFlow (hobby)</li></ul></div>
     </div>
+  </div>
+</section>
 
-  </div><!-- /book -->
-  </div><!-- /book-frame -->
-</div><!-- /book-wrapper -->
+<!-- ================= TALKS ================= -->
+<section id="talks">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Talks</h2>
+      <span class="endpoint"><span class="m">GET</span>/talks <span class="c">200</span></span>
+    </div>
+    <div class="talks">
+      <article class="talk">
+        <div class="when">Jun 2018</div>
+        <div><h3>FiDo — implementation and lessons learned</h3><p>WestNet Conference · NOAA, Boulder, Colorado</p></div>
+      </article>
+      <article class="talk">
+        <div class="when">Jun 2015</div>
+        <div><h3>Managing copper and fiber optic plant facilities with dynamic web applications</h3><p>WestNet Conference · Boise State University, Boise, Idaho</p></div>
+      </article>
+    </div>
+  </div>
+</section>
 
-<!-- ==============================
-     NAVIGATION — Side Arrows
-     ============================== -->
-<button class="side-arrow" id="arrow-left">&larr;</button>
-<button class="side-arrow" id="arrow-right">&rarr;</button>
+<!-- ================= CONTACT ================= -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div>
+      <span class="endpoint"><span class="m">POST</span>/contact <span class="c">202 Accepted</span></span>
+      <h2 style="margin-top:12px">Have two systems that need to agree?</h2>
+      <p>I'm open to integration engineering roles and to talking shop about ERP connectors, EdTech workflows, MCP tooling, or how to version a fictional universe. Email is the fastest path.</p>
+    </div>
+    <div class="contact-card">
+      <a href="mailto:timmons.seth@gmail.com">Email <small>timmons.seth@gmail.com</small></a>
+      <a href="https://github.com/timmseth" rel="noopener">GitHub <small>github.com/timmseth</small></a>
+      <a href="Hitchhikers%20Guide/">Hitchhiker's Guide portfolio <small>the interactive one</small></a>
+    </div>
+  </div>
+</section>
 
-<!-- Bottom bar: dots + home -->
-<div id="nav-bar">
-  <button id="btn-home">&#9776; Terminal</button>
-  <div class="page-dots" id="page-dots"></div>
-  <div id="page-label"></div>
-</div>
+</main>
 
-<div id="site-footer">Created with &lt;3 by <a href="https://www.linkedin.com/in/seth-timmons/" target="_blank" rel="noopener">Seth Timmons</a></div>
+<footer>
+  <div class="wrap">
+    <span>© <span id="yr">2026</span> Seth Timmons · Pocatello, Idaho</span>
+    <span>Hand-built, no framework. <a href="https://github.com/timmseth/timmseth.github.io" rel="noopener">Source on GitHub</a></span>
+  </div>
+</footer>
 
-<!-- ==============================
-     JAVASCRIPT
-     ============================== -->
 <script>
-(function() {
-  'use strict';
-
-  /* ==============================
-     D3 STAR MAP BACKGROUND
-     Real Yale Bright Star Catalog data (1,627 stars)
-     rendered via D3 geoStereographic on canvas with
-     slow rotation, graticule, and twinkle effects.
-     Based on Observable @d3/star-map by Mike Bostock.
-     ============================== */
-  const canvas = document.getElementById('starfield');
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-
-  // Projection: flipped stereographic centered on North Pole
-  const projection = d3.geoStereographic()
-    .reflectY(true)
-    .rotate([0, -90])
-    .precision(0.1);
-
-  const geoPath = d3.geoPath(projection, ctx);
-  const graticule = d3.geoGraticule().stepMinor([15, 10])();
-  const outline = d3.geoCircle().radius(90).center([0, 90])();
-
-  // Magnitude to pixel radius (matches Observable: [6,-1] → [0,8])
-  const radiusScale = d3.scaleLinear([6, -1], [0, 6]);
-
-  // Greek letter abbreviation → symbol mapping
-  const greekLetters = {alf:"α",bet:"β",gam:"γ",del:"δ",eps:"ε",zet:"ζ",eta:"η",tet:"θ",iot:"ι",kap:"κ",lam:"λ",mu:"μ",nu:"ν",xi:"ξ",omi:"ο",pi:"π",ro:"ρ",sig:"σ",tau:"τ",ups:"υ",phi:"φ",chi:"χ",psi:"ψ",omg:"ω"};
-  // Constellation abbreviation → full name
-  const constellationNames = {And:"Andromeda",Ant:"Antlia",Aps:"Apus",Aqr:"Aquarius",Aql:"Aquila",Ara:"Ara",Ari:"Aries",Aur:"Auriga",Boo:"Boötes",Cae:"Caelum",Cam:"Camelopardalis",Cnc:"Cancer",CVn:"Canes Venatici",CMa:"Canis Major",CMi:"Canis Minor",Cap:"Capricornus",Car:"Carina",Cas:"Cassiopeia",Cen:"Centaurus",Cep:"Cepheus",Cet:"Cetus",Cha:"Chamaeleon",Cir:"Circinus",Col:"Columba",Com:"Coma Berenices",CrA:"Corona Austrina",CrB:"Corona Borealis",Crv:"Corvus",Crt:"Crater",Cru:"Crux",Cyg:"Cygnus",Del:"Delphinus",Dor:"Dorado",Dra:"Draco",Equ:"Equuleus",Eri:"Eridanus",For:"Fornax",Gem:"Gemini",Gru:"Grus",Her:"Hercules",Hor:"Horologium",Hya:"Hydra",Hyi:"Hydrus",Ind:"Indus",Lac:"Lacerta",Leo:"Leo",LMi:"Leo Minor",Lep:"Lepus",Lib:"Libra",Lup:"Lupus",Lyn:"Lynx",Lyr:"Lyra",Men:"Mensa",Mic:"Microscopium",Mon:"Monoceros",Mus:"Musca",Nor:"Norma",Oct:"Octans",Oph:"Ophiuchus",Ori:"Orion",Pav:"Pavo",Peg:"Pegasus",Per:"Perseus",Phe:"Phoenix",Pic:"Pictor",Psc:"Pisces",PsA:"Piscis Austrinus",Pup:"Puppis",Pyx:"Pyxis",Ret:"Reticulum",Sge:"Sagitta",Sgr:"Sagittarius",Sco:"Scorpius",Scl:"Sculptor",Sct:"Scutum",Ser:"Serpens",Sex:"Sextans",Tau:"Taurus",Tel:"Telescopium",Tri:"Triangulum",TrA:"Triangulum Australe",Tuc:"Tucana",UMa:"Ursa Major",UMi:"Ursa Minor",Vel:"Vela",Vir:"Virgo",Vol:"Volans",Vul:"Vulpecula"};
-
-  // Star catalog (loaded async)
-  let starCatalog = [];
-  let starsReady = false;
-
-  // Mouse tracking for hover labels (document-level so it works through overlapping elements)
-  let mouseX = -9999, mouseY = -9999;
-  document.addEventListener('mousemove', e => {
-    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    mouseX = e.clientX / z;
-    mouseY = e.clientY / z;
-  });
-  document.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
-
-  // Random twinkle-blink system: periodically pick random labeled stars to flash bright
-  let blinkingStars = new Set();
-  let blinkTimers = {};
-  function scheduleRandomBlinks() {
-    setInterval(() => {
-      if (!starsReady) return;
-      // Pick 1-3 labeled stars to blink
-      const labeled = starCatalog.filter(s => s.label);
-      if (labeled.length === 0) return;
-      const count = 1 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < count; i++) {
-        const star = labeled[Math.floor(Math.random() * labeled.length)];
-        const id = star.id;
-        if (blinkingStars.has(id)) continue;
-        blinkingStars.add(id);
-        star.blinkStart = performance.now();
-        // Blink visible for 4-7 seconds with slow fade in/out
-        const dur = 4000 + Math.random() * 3000;
-        star.blinkDur = dur;
-        setTimeout(() => { blinkingStars.delete(id); }, dur);
-      }
-    }, 1200 + Math.random() * 2000);
-  }
-  scheduleRandomBlinks();
-
-  // Load real star data from CSV
-  d3.csv('stars.csv').then(raw => {
-    starCatalog = raw.map((d, i) => {
-      const ra_h = +d.RA_hour, ra_m = +d.RA_min, ra_s = +d.RA_sec;
-      const dec_d = +d.dec_deg, dec_m = +d.dec_min, dec_s = +d.dec_sec;
-      const lon = (ra_h + ra_m / 60 + ra_s / 3600) * 15;
-      const lat = dec_d + dec_m / 60 + dec_s / 3600;
-      const mag = +d.magnitude;
-      // Build label: greek letter + constellation name
-      let label = null;
-      if (d.constellation && d.constellation !== '') {
-        const greekAbbr = d.greek_letter ? d.greek_letter.replace(/\d/g, '').trim() : null;
-        const greekSym = greekAbbr ? (greekLetters[greekAbbr] || '') : '';
-        const constName = constellationNames[d.constellation] || d.constellation;
-        label = greekSym ? `${greekSym} ${constName}` : constName;
-      }
-      return {
-        id: i,
-        coords: [lon, lat],
-        mag,
-        label,
-        twinklePhase: i * 1.618,
-        twinkleSpeed: 0.4 + (i % 7) * 0.25,
-        blinkStart: 0
-      };
-    }).sort((a, b) => a.mag - b.mag);
-    starsReady = true;
-  }).catch(() => {
-    for (let i = 0; i < 800; i++) {
-      const lon = Math.random() * 360;
-      const lat = Math.asin(2 * Math.random() - 1) * (180 / Math.PI);
-      starCatalog.push({
-        id: i, coords: [lon, lat],
-        mag: 1 + Math.pow(Math.random(), 0.4) * 5,
-        label: null,
-        twinklePhase: Math.random() * Math.PI * 2,
-        twinkleSpeed: 0.4 + Math.random() * 1.5,
-        blinkStart: 0
-      });
-    }
-    starsReady = true;
-  });
-
-  // Sizing
-  function sizeCanvas() {
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const dim = Math.max(window.innerWidth, window.innerHeight);
-    projection
-      .scale((dim - 120) * 0.5)
-      .clipExtent([[0, 0], [window.innerWidth, window.innerHeight]])
-      .translate([window.innerWidth / 2, window.innerHeight / 2]);
-  }
-  sizeCanvas();
-  window.addEventListener('resize', sizeCanvas);
-
-  // Render loop
-  let rotAngle = 0;
-  let hoveredStar = null;       // Currently hovered important star
-  let rainbowInfection = {};    // starId → { startTime, generation }
-  let infectionSource = null;   // screen position of infection origin
-  const INFECTION_SPEED = 120;  // pixels per second spread rate
-  const INFECTION_MAX_DIST = 600;
-
-  // Hover-pause detection: trigger infection after mouse stays near a star
-  let hoverCandidate = null;    // star the mouse is near
-  let hoverCandidateStart = 0;  // when mouse first got near it
-  let hoverCandidatePos = null; // screen pos of candidate
-  const HOVER_DWELL_MS = 400;  // ms of hover to trigger
-
-  // === MOBILE BLACKHOLE SYSTEM ===
-  // Hold → blackhole opens, pulls in stars, grows with each eaten star
-  // Release → everything snaps back like nothing happened
-  let blackhole = null; // { x, y, startTime, eatenStars: Set, size, active, releaseTime }
-  const BH_PULL_RADIUS = 350;    // gravitational reach (px)
-  const BH_EAT_RADIUS = 15;      // stars within this get consumed
-  const BH_BASE_SIZE = 3;        // starting visual radius (tiny dot)
-  const BH_GROW_PER_EAT = 0.8;   // size increase per eaten star (slow growth)
-  const BH_MAX_SIZE = 60;        // max visual radius
-  const BH_SNAPBACK_MS = 800;    // ms for stars to spring back after release
-
-  // Per-star pull offsets (displaced positions during blackhole)
-  let bhStarOffsets = {}; // starId → { ox, oy } current offset from true pos
-
-  // === TAP vs HOLD DETECTION ===
-  // Tap (< 400ms) → rainbow infection at nearest star
-  // Hold (>= 400ms) → blackhole
-  const HOLD_THRESHOLD = 400; // ms
-  let pressStart = 0;
-  let pressPos = { x: 0, y: 0 };
-  let holdTimer = null;
-  let isHolding = false;
-  let tapInfectionPos = null; // set on tap to trigger rainbow in render loop
-
-  function startBlackhole(x, y) {
-    blackhole = {
-      x, y,
-      startTime: performance.now(),
-      eatenStars: new Set(),
-      size: BH_BASE_SIZE,
-      active: true,
-      releaseTime: null
-    };
-    bhStarOffsets = {};
-  }
-
-  function onPressStart(x, y) {
-    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    const px = x / z, py = y / z;
-    pressStart = performance.now();
-    pressPos = { x: px, y: py };
-    isHolding = false;
-
-    clearTimeout(holdTimer);
-    holdTimer = setTimeout(() => {
-      // Held long enough → blackhole
-      isHolding = true;
-      startBlackhole(px, py);
-    }, HOLD_THRESHOLD);
-  }
-
-  function onPressMove(x, y) {
-    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    const px = x / z, py = y / z;
-
-    // If moved too far, cancel hold detection
-    const dx = px - pressPos.x, dy = py - pressPos.y;
-    if (Math.sqrt(dx * dx + dy * dy) > 20) {
-      clearTimeout(holdTimer);
-    }
-
-    if (blackhole && blackhole.active) {
-      blackhole.x = px; blackhole.y = py;
-    }
-  }
-
-  function onPressEnd() {
-    clearTimeout(holdTimer);
-    if (isHolding) {
-      // Was a hold → release blackhole
-      if (blackhole && blackhole.active) {
-        blackhole.active = false;
-        blackhole.releaseTime = performance.now();
-      }
-      isHolding = false;
-    } else {
-      // Was a tap → trigger rainbow infection at press position
-      tapInfectionPos = { x: pressPos.x, y: pressPos.y };
-      mouseX = pressPos.x; mouseY = pressPos.y;
-      // Keep mouseX/Y set briefly so render loop can detect nearest star
-      setTimeout(() => {
-        if (tapInfectionPos === null) { mouseX = -9999; mouseY = -9999; }
-      }, 100);
-    }
-  }
-
-  // Desktop: mouse
-  document.addEventListener('mousedown', e => {
-    if (e.button !== 0) return;
-    onPressStart(e.clientX, e.clientY);
-  });
-  document.addEventListener('mousemove', e => {
-    if (pressStart > 0 && isHolding) {
-      onPressMove(e.clientX, e.clientY);
-    }
-  });
-  document.addEventListener('mouseup', e => {
-    if (e.button !== 0) return;
-    onPressEnd();
-    pressStart = 0;
-  });
-
-  // Mobile: touch
-  document.addEventListener('touchstart', e => {
-    const t = e.touches[0];
-    mouseX = t.clientX; mouseY = t.clientY;
-    onPressStart(t.clientX, t.clientY);
-  }, { passive: true });
-  document.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    mouseX = t.clientX / z; mouseY = t.clientY / z;
-    onPressMove(t.clientX, t.clientY);
-  }, { passive: true });
-  document.addEventListener('touchend', () => {
-    onPressEnd();
-    // Don't reset mouseX/Y immediately — let render loop detect tap target
-    setTimeout(() => { mouseX = -9999; mouseY = -9999; }, 150);
-  }, { passive: true });
-
-  function renderStarMap(time) {
-    const t = time / 1000;
-
-    // Pause rotation when hovering an important star
-    if (!hoveredStar) {
-      rotAngle += 0.008;
-    }
-    projection.rotate([rotAngle, -90]);
-
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    ctx.clearRect(0, 0, W, H);
-
-    // Background gradient (deep space blue-purple → black)
-    const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.7);
-    bgGrad.addColorStop(0, '#0a0d2e');
-    bgGrad.addColorStop(1, '#030308');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, W, H);
-
-    // Outline circle
-    ctx.beginPath();
-    geoPath(outline);
-    ctx.strokeStyle = 'rgba(100, 80, 160, 0.15)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Graticule grid
-    ctx.beginPath();
-    geoPath(graticule);
-    ctx.strokeStyle = 'rgba(80, 70, 130, 0.08)';
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
-    if (!starsReady) {
-      requestAnimationFrame(renderStarMap);
-      return;
-    }
-
-    // Draw stars and labels
-    const hoverRadius = 150; // pixels - radius of hover reveal zone
-    const now = performance.now();
-
-    // Pre-compute screen positions for all visible stars
-    const starPositions = [];
-    for (const star of starCatalog) {
-      const pos = projection(star.coords);
-      if (!pos) continue;
-      if (pos[0] < -10 || pos[0] > W + 10 || pos[1] < -10 || pos[1] > H + 10) continue;
-      starPositions.push({ star, pos });
-    }
-
-    // Detect hover on important stars (mag < 1.5, within 25px) — rainbow infection
-    // Only when blackhole is NOT active
-    if (!blackhole || !blackhole.active) {
-      let nearestImportant = null;
-      let nearestPos = null;
-      for (const { star, pos } of starPositions) {
-        if (star.mag >= 1.5 || !star.label) continue;
-        const dx = pos[0] - mouseX, dy = pos[1] - mouseY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 25) { nearestImportant = star; nearestPos = pos; break; }
-      }
-
-      // Dwell-time hover (desktop) or instant via tapInfection flag (mobile)
-      if (nearestImportant) {
-        if (hoverCandidate !== nearestImportant) {
-          hoverCandidate = nearestImportant;
-          hoverCandidateStart = now;
-          hoverCandidatePos = nearestPos;
-        }
-        const dwellMet = now - hoverCandidateStart >= HOVER_DWELL_MS;
-        const tapTriggered = tapInfectionPos !== null;
-
-        if (!hoveredStar && (dwellMet || tapTriggered)) {
-          hoveredStar = tapTriggered ? hoverCandidate : hoverCandidate;
-          infectionSource = hoverCandidatePos;
-          rainbowInfection = {};
-          rainbowInfection[hoveredStar.id] = { startTime: now, generation: 0 };
-          tapInfectionPos = null; // consumed
-        } else if (hoveredStar && hoveredStar === nearestImportant) {
-          infectionSource = nearestPos;
-        } else if (hoveredStar && hoveredStar !== nearestImportant) {
-          rainbowInfection._fadeStart = now;
-          hoveredStar = null;
-          hoverCandidate = nearestImportant;
-          hoverCandidateStart = now;
-          hoverCandidatePos = nearestPos;
-        }
-      } else {
-        hoverCandidate = null;
-        if (tapInfectionPos) tapInfectionPos = null; // tap missed a star
-        if (hoveredStar) {
-          rainbowInfection._fadeStart = now;
-          hoveredStar = null;
-        }
-      }
-
-      // Spread infection
-      if (hoveredStar && infectionSource) {
-        for (const { star, pos } of starPositions) {
-          if (rainbowInfection[star.id]) continue;
-          const dx = pos[0] - infectionSource[0], dy = pos[1] - infectionSource[1];
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > INFECTION_MAX_DIST) continue;
-          const arrivalTime = (dist / INFECTION_SPEED) * 1000;
-          const elapsed = now - rainbowInfection[hoveredStar.id].startTime;
-          if (elapsed >= arrivalTime) {
-            rainbowInfection[star.id] = { startTime: now, generation: dist };
-          }
-        }
-      }
-    } else {
-      // Blackhole active — clear any rainbow state
-      if (hoveredStar) {
-        rainbowInfection = {};
-        hoveredStar = null;
-        hoverCandidate = null;
-      }
-    }
-
-    // === BLACKHOLE PHYSICS ===
-    let bhAlpha = 0; // overall blackhole visual intensity
-    if (blackhole) {
-      const bhAge = now - blackhole.startTime;
-
-      if (blackhole.active) {
-        // Actively pulling — grow intensity
-        bhAlpha = Math.min(1, bhAge / 400);
-        const dt = 1 / 60; // approximate frame delta in seconds
-
-        for (const { star, pos } of starPositions) {
-          if (blackhole.eatenStars.has(star.id)) continue;
-
-          // Distance from star's TRUE position to blackhole center
-          const off = bhStarOffsets[star.id] || { ox: 0, oy: 0 };
-          const sx = pos[0] + off.ox;
-          const sy = pos[1] + off.oy;
-          const dx = blackhole.x - sx;
-          const dy = blackhole.y - sy;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < BH_EAT_RADIUS) {
-            // EATEN — star consumed
-            blackhole.eatenStars.add(star.id);
-            blackhole.size = Math.min(BH_MAX_SIZE, blackhole.size + BH_GROW_PER_EAT);
-          } else if (dist < BH_PULL_RADIUS) {
-            // Gravitational pull — stronger when closer, quadratic falloff
-            const force = Math.pow(1 - dist / BH_PULL_RADIUS, 1.5);
-            const pullSpeed = 200 * force * dt;
-            const nx = dx / dist, ny = dy / dist;
-            if (!bhStarOffsets[star.id]) bhStarOffsets[star.id] = { ox: 0, oy: 0 };
-            bhStarOffsets[star.id].ox += nx * pullSpeed;
-            bhStarOffsets[star.id].oy += ny * pullSpeed;
-          }
-        }
-      } else if (blackhole.releaseTime) {
-        // Released — stars snapping back
-        const snapProgress = Math.min(1, (now - blackhole.releaseTime) / BH_SNAPBACK_MS);
-        const ease = 1 - Math.pow(1 - snapProgress, 3); // ease-out cubic
-        bhAlpha = 1 - ease;
-
-        // Lerp all offsets back to zero
-        for (const id in bhStarOffsets) {
-          bhStarOffsets[id].ox *= (1 - ease * 0.15);
-          bhStarOffsets[id].oy *= (1 - ease * 0.15);
-        }
-
-        // Clear when done
-        if (snapProgress >= 1) {
-          blackhole = null;
-          bhStarOffsets = {};
-        }
-      }
-    }
-
-    // Draw blackhole visual (dark vortex with purple accretion disk)
-    if (blackhole && bhAlpha > 0.01) {
-      const bh = blackhole;
-      const sz = bh.size;
-      const pulse = 1 + 0.08 * Math.sin(t * 8);
-
-      // Dark void center
-      const voidGrad = ctx.createRadialGradient(bh.x, bh.y, 0, bh.x, bh.y, sz * pulse);
-      voidGrad.addColorStop(0, `rgba(0, 0, 0, ${bhAlpha})`);
-      voidGrad.addColorStop(0.7, `rgba(5, 0, 15, ${bhAlpha * 0.9})`);
-      voidGrad.addColorStop(1, `rgba(20, 0, 40, 0)`);
-      ctx.fillStyle = voidGrad;
-      ctx.beginPath();
-      ctx.arc(bh.x, bh.y, sz * pulse, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Purple accretion ring
-      const ringR = sz * 1.6 * pulse;
-      const ringGrad = ctx.createRadialGradient(bh.x, bh.y, sz * 0.8, bh.x, bh.y, ringR);
-      ringGrad.addColorStop(0, `rgba(120, 40, 200, 0)`);
-      ringGrad.addColorStop(0.4, `rgba(160, 60, 255, ${bhAlpha * 0.25})`);
-      ringGrad.addColorStop(0.7, `rgba(200, 100, 255, ${bhAlpha * 0.15})`);
-      ringGrad.addColorStop(1, `rgba(140, 60, 200, 0)`);
-      ctx.fillStyle = ringGrad;
-      ctx.beginPath();
-      ctx.arc(bh.x, bh.y, ringR, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Spinning streaks (eaten star count drives intensity)
-      const streaks = Math.min(bh.eatenStars.size, 12);
-      for (let i = 0; i < streaks; i++) {
-        const angle = (i / streaks) * Math.PI * 2 + t * 3;
-        const sr = sz * (1.2 + 0.4 * Math.sin(t * 5 + i));
-        const ex = bh.x + Math.cos(angle) * sr;
-        const ey = bh.y + Math.sin(angle) * sr;
-        ctx.beginPath();
-        ctx.moveTo(bh.x + Math.cos(angle) * sz * 0.3, bh.y + Math.sin(angle) * sz * 0.3);
-        ctx.lineTo(ex, ey);
-        ctx.strokeStyle = `rgba(180, 120, 255, ${bhAlpha * 0.3})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      // Score text — eaten count
-      if (bh.eatenStars.size > 0) {
-        ctx.font = 'bold 10px "Fira Code", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = `rgba(200, 160, 255, ${bhAlpha * 0.8})`;
-        ctx.fillText(`${bh.eatenStars.size} consumed`, bh.x, bh.y + sz + 16);
-      }
-    }
-
-    // Clear faded infections
-    if (rainbowInfection._fadeStart && now - rainbowInfection._fadeStart > 2000) {
-      rainbowInfection = {};
-    }
-
-    for (const { star, pos: origPos } of starPositions) {
-      // Skip eaten stars (while blackhole is active)
-      if (blackhole && blackhole.eatenStars.has(star.id) && blackhole.active) continue;
-
-      const r = radiusScale(star.mag);
-      if (r <= 0) continue;
-
-      // Apply blackhole offset to position
-      const bhOff = bhStarOffsets[star.id];
-      const pos = bhOff ? [origPos[0] + bhOff.ox, origPos[1] + bhOff.oy] : origPos;
-
-      // Twinkle effect
-      const twinkle = 0.65 + 0.35 * Math.sin(t * star.twinkleSpeed + star.twinklePhase);
-      const alpha = Math.min(1, twinkle * (r / 3 + 0.3));
-      const drawR = r * (0.85 + 0.15 * twinkle);
-
-      // Check if this star is in a blink state
-      const isBlinking = blinkingStars.has(star.id);
-      let blinkBoost = 0;
-      if (isBlinking && star.blinkStart) {
-        const elapsed = now - star.blinkStart;
-        const dur = star.blinkDur || 5000;
-        const progress = Math.min(elapsed / dur, 1);
-        // Fade in (0-20%), hold (20-80%), fade out (80-100%)
-        if (progress < 0.2) {
-          blinkBoost = progress / 0.2; // 0→1
-        } else if (progress < 0.8) {
-          blinkBoost = 1; // hold at full
-        } else {
-          blinkBoost = (1 - progress) / 0.2; // 1→0
-        }
-      }
-
-      // Glow halo for bright stars (magnitude < 2.5) or blinking stars
-      if (star.mag < 2.5 || blinkBoost > 0.3) {
-        const glowIntensity = star.mag < 2.5 ? alpha * 0.12 : blinkBoost * 0.1;
-        const glowR = drawR * (4 + blinkBoost * 3);
-        const glow = ctx.createRadialGradient(pos[0], pos[1], 0, pos[0], pos[1], glowR);
-        glow.addColorStop(0, `rgba(180, 180, 255, ${glowIntensity})`);
-        glow.addColorStop(0.4, `rgba(140, 130, 200, ${glowIntensity * 0.3})`);
-        glow.addColorStop(1, 'rgba(140, 130, 200, 0)');
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(pos[0], pos[1], glowR, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Rainbow infection state for this star
-      const inf = rainbowInfection[star.id];
-      let infAlpha = 0;
-      let infHue = 0;
-      const isFading = rainbowInfection._fadeStart;
-      if (inf) {
-        const infAge = (now - inf.startTime) / 1000;
-        infHue = (inf.generation * 0.6 + t * 40) % 360;
-        if (isFading) {
-          const fadeProgress = (now - rainbowInfection._fadeStart) / 2000;
-          infAlpha = Math.max(0, 1 - fadeProgress);
-        } else {
-          infAlpha = Math.min(1, infAge * 3); // fast fade in
-        }
-      }
-      const isInfected = infAlpha > 0.05;
-
-      // Star dot — brighter if blinking or infected
-      const dotAlpha = Math.min(1, alpha + blinkBoost * 0.5 + infAlpha * 0.4);
-      const dotR = drawR + blinkBoost * 1.5 + (isInfected ? 1.5 : 0);
-      ctx.beginPath();
-      ctx.arc(pos[0], pos[1], dotR, 0, Math.PI * 2);
-      if (isInfected) {
-        ctx.fillStyle = `hsla(${infHue}, 100%, 70%, ${dotAlpha})`;
-      } else {
-        ctx.fillStyle = `rgba(220, 220, 255, ${dotAlpha})`;
-      }
-      ctx.fill();
-
-      // Rainbow glow for infected stars
-      if (isInfected) {
-        const glowR = dotR * 5;
-        const glow = ctx.createRadialGradient(pos[0], pos[1], 0, pos[0], pos[1], glowR);
-        glow.addColorStop(0, `hsla(${infHue}, 100%, 70%, ${infAlpha * 0.25})`);
-        glow.addColorStop(1, `hsla(${infHue}, 100%, 70%, 0)`);
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(pos[0], pos[1], glowR, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Draw infection connection lines back to source
-      if (isInfected && infectionSource && inf.generation > 0) {
-        ctx.beginPath();
-        ctx.moveTo(infectionSource[0], infectionSource[1]);
-        ctx.lineTo(pos[0], pos[1]);
-        ctx.strokeStyle = `hsla(${infHue}, 90%, 55%, ${infAlpha * 0.12})`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
-
-      // --- LABELS ---
-      if (!star.label) continue;
-      if (star.mag > 4.5 && !isInfected) continue;
-
-      // Distance from mouse
-      const dx = pos[0] - mouseX;
-      const dy = pos[1] - mouseY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      // Hover proximity: closer = more visible
-      const hoverFactor = dist < hoverRadius
-        ? Math.pow(1 - dist / hoverRadius, 1.5)
-        : 0;
-
-      // Is this the hovered important star?
-      const isDirectHover = hoveredStar && star.id === hoveredStar.id;
-
-      // Base label opacity: brightest stars always 50% visible, direct hover = full, others ghostly
-      let baseLabelAlpha;
-      if (isDirectHover) {
-        baseLabelAlpha = 1.0;
-      } else if (star.mag < 1.5) {
-        baseLabelAlpha = 0.5;
-      } else if (star.mag < 2) {
-        baseLabelAlpha = 0.06;
-      } else {
-        baseLabelAlpha = 0.03;
-      }
-
-      // Blink boost + infection boost for labels
-      const labelBlinkAlpha = blinkBoost * 0.55;
-      const labelInfAlpha = isInfected ? infAlpha * 0.6 : 0;
-
-      // Combined label alpha
-      const labelAlpha = Math.min(1, baseLabelAlpha + hoverFactor * 0.85 + labelBlinkAlpha + labelInfAlpha);
-      if (labelAlpha < 0.02) continue;
-
-      // Font: bolder when hovered, blinking, or infected
-      const isHighlighted = isDirectHover || hoverFactor > 0.3 || blinkBoost > 0.4 || infAlpha > 0.5;
-      const fontSize = isHighlighted
-        ? (star.mag < 2 ? 12 : 10)
-        : (star.mag < 2 ? 10 : 8);
-      ctx.font = `${isHighlighted ? 'bold ' : ''}${fontSize}px 'Fira Code', monospace`;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-
-      // Glow behind text when highlighted
-      if (isHighlighted) {
-        const glowColor = isInfected
-          ? `hsla(${infHue}, 100%, 70%, ${labelAlpha * 0.6})`
-          : `rgba(180, 160, 255, ${labelAlpha * 0.6})`;
-        ctx.shadowColor = glowColor;
-        ctx.shadowBlur = 8;
-      }
-
-      const labelColor = isInfected
-        ? `hsla(${infHue}, 90%, 80%, ${labelAlpha})`
-        : `rgba(200, 190, 255, ${labelAlpha})`;
-      ctx.fillStyle = labelColor;
-      ctx.fillText(star.label, pos[0] + dotR + 4, pos[1]);
-
-      // Reset shadow
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-    }
-
-    requestAnimationFrame(renderStarMap);
-  }
-
-  requestAnimationFrame(renderStarMap);
-
-  /* ==============================
-     CYBERGRID BACKGROUND
-     ============================== */
-  const cgCanvas = document.getElementById('cybergrid');
-  const cgCtx = cgCanvas.getContext('2d');
-  let cgActive = true;
-  let cgMouse = { x: -9999, y: -9999 };
-  let cgNodes = [];
-  let cgEdges = [];
-  const isMobileDevice = window.innerWidth <= 600;
-  const CG_SPACING = isMobileDevice ? 90 : 50;
-  const CG_CONNECT_DIST = isMobileDevice ? 130 : 75;
-  const CG_PULL_RADIUS = 250;
-  const CG_PULL_STRENGTH = 0.035;
-  const CG_RETURN_STRENGTH = 0.03;
-  const CG_DAMPING = 0.92;
-
-  function cgInit() {
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    cgCanvas.width = W * dpr;
-    cgCanvas.height = H * dpr;
-    cgCanvas.style.width = W + 'px';
-    cgCanvas.style.height = H + 'px';
-    cgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    cgNodes = [];
-    cgEdges = [];
-    const cols = Math.ceil(W / CG_SPACING) + 2;
-    const rows = Math.ceil(H / CG_SPACING) + 2;
-    const ox = (W - (cols - 1) * CG_SPACING) / 2;
-    const oy = (H - (rows - 1) * CG_SPACING) / 2;
-
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const hx = ox + c * CG_SPACING;
-        const hy = oy + r * CG_SPACING;
-        cgNodes.push({ hx, hy, x: hx, y: hy, vx: 0, vy: 0, row: r, col: c });
-      }
-    }
-
-    // Build edges (horizontal + vertical + diagonals)
-    for (let i = 0; i < cgNodes.length; i++) {
-      const n = cgNodes[i];
-      for (let j = i + 1; j < cgNodes.length; j++) {
-        const m = cgNodes[j];
-        const dx = n.hx - m.hx, dy = n.hy - m.hy;
-        if (Math.sqrt(dx * dx + dy * dy) <= CG_CONNECT_DIST) {
-          cgEdges.push([i, j]);
-        }
-      }
-    }
-  }
-
-  cgInit();
-  window.addEventListener('resize', cgInit);
-
-  document.addEventListener('mousemove', e => {
-    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    cgMouse.x = e.clientX / z;
-    cgMouse.y = e.clientY / z;
-  });
-  document.addEventListener('mouseleave', () => { cgMouse.x = -9999; cgMouse.y = -9999; });
-  document.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-    cgMouse.x = t.clientX / z;
-    cgMouse.y = t.clientY / z;
-  }, { passive: true });
-  document.addEventListener('touchend', () => { cgMouse.x = -9999; cgMouse.y = -9999; });
-
-  function cgRender(time) {
-    if (!cgActive) { requestAnimationFrame(cgRender); return; }
-    const t = time / 1000;
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    cgCtx.clearRect(0, 0, W, H);
-
-    // Deep dark background
-    cgCtx.fillStyle = '#030308';
-    cgCtx.fillRect(0, 0, W, H);
-
-    // Physics: pull toward cursor (blackhole), spring back to home
-    for (const n of cgNodes) {
-      const dx = cgMouse.x - n.x;
-      const dy = cgMouse.y - n.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      // Blackhole pull — stronger when closer
-      if (dist < CG_PULL_RADIUS && dist > 1) {
-        const force = CG_PULL_STRENGTH * Math.pow(1 - dist / CG_PULL_RADIUS, 2);
-        n.vx += dx / dist * force * CG_PULL_RADIUS * 0.15;
-        n.vy += dy / dist * force * CG_PULL_RADIUS * 0.15;
-      }
-
-      // Spring back to home position
-      n.vx += (n.hx - n.x) * CG_RETURN_STRENGTH;
-      n.vy += (n.hy - n.y) * CG_RETURN_STRENGTH;
-
-      // Damping
-      n.vx *= CG_DAMPING;
-      n.vy *= CG_DAMPING;
-
-      n.x += n.vx;
-      n.y += n.vy;
-    }
-
-    // Draw edges with rainbow hue based on displacement + distance from cursor
-    for (const [i, j] of cgEdges) {
-      const a = cgNodes[i], b = cgNodes[j];
-      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      const distA = Math.sqrt((a.x - a.hx) ** 2 + (a.y - a.hy) ** 2);
-      const distB = Math.sqrt((b.x - b.hx) ** 2 + (b.y - b.hy) ** 2);
-      const displacement = (distA + distB) / 2;
-      const cursorDist = Math.sqrt((mx - cgMouse.x) ** 2 + (my - cgMouse.y) ** 2);
-
-      // Rainbow hue spiderwebs from cursor
-      const hue = (cursorDist * 0.8 + t * 60) % 360;
-      const saturation = 80 + displacement * 2;
-      const lightness = 30 + Math.min(displacement * 3, 40);
-      const alpha = 0.15 + Math.min(displacement / 30, 0.7);
-
-      cgCtx.beginPath();
-      cgCtx.moveTo(a.x, a.y);
-      cgCtx.lineTo(b.x, b.y);
-      cgCtx.strokeStyle = `hsla(${hue}, ${Math.min(saturation, 100)}%, ${Math.min(lightness, 70)}%, ${alpha})`;
-      cgCtx.lineWidth = 0.5 + Math.min(displacement / 20, 1.5);
-      cgCtx.stroke();
-    }
-
-    // Draw nodes — small dots, brighter near cursor
-    for (const n of cgNodes) {
-      const dist = Math.sqrt((n.x - cgMouse.x) ** 2 + (n.y - cgMouse.y) ** 2);
-      const displacement = Math.sqrt((n.x - n.hx) ** 2 + (n.y - n.hy) ** 2);
-      const hue = (dist * 0.8 + t * 60) % 360;
-      const nodeAlpha = 0.2 + Math.min(displacement / 15, 0.8);
-      const r = 1 + Math.min(displacement / 15, 2);
-
-      cgCtx.beginPath();
-      cgCtx.arc(n.x, n.y, r, 0, Math.PI * 2);
-      cgCtx.fillStyle = `hsla(${hue}, 90%, 60%, ${nodeAlpha})`;
-      cgCtx.fill();
-
-      // Bright glow for highly displaced nodes
-      if (displacement > 8) {
-        const glowR = r * 4;
-        const glow = cgCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowR);
-        glow.addColorStop(0, `hsla(${hue}, 100%, 70%, ${displacement / 80})`);
-        glow.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);
-        cgCtx.fillStyle = glow;
-        cgCtx.beginPath();
-        cgCtx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
-        cgCtx.fill();
-      }
-    }
-
-    requestAnimationFrame(cgRender);
-  }
-  requestAnimationFrame(cgRender);
-
-  // BG toggle button (desktop + mobile)
-  const bgMobileBtn = document.getElementById('bg-toggle-mobile');
-  bgMobileBtn.addEventListener('click', () => {
-    cgActive = !cgActive;
-    document.getElementById('cybergrid').classList.toggle('active', cgActive);
-    bgMobileBtn.classList.toggle('active', cgActive);
-    // Close info popup on toggle so it refreshes next open
-    document.getElementById('bg-info-popup').classList.remove('visible');
-  });
-
-  // ? info button
-  const bgInfoBtn = document.getElementById('bg-info-btn');
-  const bgInfoPopup = document.getElementById('bg-info-popup');
-  const bgInfoContent = {
-    cybergrid: `<strong>Cybergrid</strong><br>An interactive node-physics mesh that reacts to your cursor like a gravitational well warping spacetime. Nodes are pulled toward the pointer and spring back with damped physics. Rainbow hues radiate outward along connecting lines based on displacement and distance.<br><br><span class="info-tools">Built with:</span> HTML5 Canvas, vanilla JS physics (spring + damping + gravity simulation), HSL color math`,
-    starmap: `<strong>Star Map</strong><br>A real-time stereographic projection of 1,627 stars from the Yale Bright Star Catalog. Stars twinkle with sinusoidal phase offsets and randomly blink to reveal their Greek letter designations and constellation names on hover.<br><br><span class="info-tools">Built with:</span> D3.js geoStereographic projection, HTML5 Canvas, Yale Bright Star Catalog (stars.csv)`
-  };
-
-  bgInfoBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isVisible = bgInfoPopup.classList.contains('visible');
-    bgInfoPopup.innerHTML = cgActive ? bgInfoContent.cybergrid : bgInfoContent.starmap;
-    bgInfoPopup.classList.toggle('visible', !isVisible);
-  });
-
-  // Close popup on click elsewhere
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#bg-info-btn') && !e.target.closest('#bg-info-popup')) {
-      bgInfoPopup.classList.remove('visible');
-    }
-  });
-
-  // BG bar toggle — hides terminal content, makes cover transparent so BG shows
-  const bgBarToggle = document.getElementById('bg-bar-toggle');
-  let bgPlayMode = false;
-  bgBarToggle.addEventListener('click', () => {
-    bgPlayMode = !bgPlayMode;
-    bgBarToggle.classList.toggle('open', bgPlayMode);
-    bgBarToggle.querySelector('span:last-child').textContent = bgPlayMode ? 'BACK TO TERMINAL' : 'LET ME PLAY WITH THE BACKGROUND';
-
-    // Hide/show everything EXCEPT the bg-bar-toggle itself
-    const header = document.querySelector('.cover-header');
-    const termBody = document.getElementById('terminal-output');
-    const termInput = document.querySelector('.terminal-input-row');
-    const guiToggle = document.getElementById('gui-toggle');
-    const guiPanel = document.getElementById('gui-panel');
-    [header, termBody, termInput, guiToggle, guiPanel].forEach(el => {
-      if (el) el.style.display = bgPlayMode ? 'none' : '';
-    });
-
-    // Make cover transparent so the background is visible, don't change which BG is active
-    document.getElementById('cover').style.background = bgPlayMode ? 'transparent' : '';
-    document.getElementById('cover').style.boxShadow = bgPlayMode ? 'none' : '';
-    document.getElementById('cover').style.border = bgPlayMode ? 'none' : '';
-  });
-
-  /* ==============================
-     LOADING SEQUENCE
-     ============================== */
-  const loadingEl = document.getElementById('loading');
-  const coverWrapper = document.getElementById('cover-wrapper');
-  const loadingLines = document.querySelectorAll('.loading-line');
-
-  coverWrapper.style.display = 'none';
-
-  loadingLines.forEach(line => {
-    const delay = parseInt(line.dataset.delay);
-    setTimeout(() => line.classList.add('visible'), delay);
-  });
-
-  setTimeout(() => {
-    loadingEl.classList.add('fade-out');
-    coverWrapper.style.display = 'flex';
-    coverWrapper.style.animation = 'fadeIn 0.8s ease forwards';
-    setTimeout(() => {
-      loadingEl.remove();
-      document.getElementById('terminal-input').focus();
-    }, 800);
-  }, 3800);
-
-  /* ==============================
-     VIEW STATE: Cover (terminal) vs Book (guide pages)
-     ============================== */
-  const bookWrapper = document.getElementById('book-wrapper');
-  const arrowLeft = document.getElementById('arrow-left');
-  const arrowRight = document.getElementById('arrow-right');
-  const navBar = document.getElementById('nav-bar');
-  const btnHome = document.getElementById('btn-home');
-  let viewMode = 'cover'; // 'cover' or 'book'
-
-  function showCover() {
-    viewMode = 'cover';
-    coverWrapper.style.display = 'flex';
-    // Force reflow so display:flex takes effect before removing hidden
-    coverWrapper.offsetHeight;
-    coverWrapper.classList.remove('hidden');
-    bookWrapper.classList.remove('visible');
-    navBar.classList.remove('visible');
-    arrowLeft.classList.remove('visible');
-    arrowRight.classList.add('visible');
-    arrowRight.disabled = false;
-    setTimeout(() => document.getElementById('terminal-input').focus(), 700);
-  }
-
-  function showBook() {
-    viewMode = 'book';
-    coverWrapper.classList.add('hidden');
-    bookWrapper.classList.add('visible');
-    navBar.classList.add('visible');
-    // Hide cover after fade-out completes
-    setTimeout(() => { if (viewMode === 'book') coverWrapper.style.display = 'none'; }, 700);
-    // Reset to first page when opening book
-    if (typeof pageFlip !== 'undefined' && pageFlip.getPageCount() > 0) {
-      pageFlip.turnToPage(0);
-      currentPage = 0;
-    }
-    updateBookNav();
-  }
-
-  // Right arrow on cover opens the book
-  arrowRight.addEventListener('click', () => {
-    if (viewMode === 'cover') {
-      showBook();
-    } else {
-      nextPage();
-    }
-  });
-
-  // Left arrow: go back; on first page, return to cover
-  arrowLeft.addEventListener('click', () => {
-    if (viewMode === 'book' && currentPage === 0) {
-      showCover();
-    } else {
-      prevPage();
-    }
-  });
-
-  // Home button returns to cover
-  btnHome.addEventListener('click', showCover);
-
-  /* ==============================
-     PAGE NAVIGATION (Book mode) — StPageFlip
-     ============================== */
-  const pages = document.querySelectorAll('.page');
-  const pageNames = ['About', 'Skills & Hats', 'Travel Log', 'Field Reports'];
-  const dotsContainer = document.getElementById('page-dots');
-  const pageLabel = document.getElementById('page-label');
-  let currentPage = 0;
-  const totalPages = pages.length;
-  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-  // Initialize StPageFlip — single page mode, use offsetWidth/Height (unaffected by CSS zoom)
-  const bookEl = document.getElementById('book');
-  const pw = bookEl.offsetWidth;
-  const ph = bookEl.offsetHeight;
-  const pageFlip = new St.PageFlip(bookEl, {
-    width: pw,
-    height: ph,
-    size: 'fixed',
-    maxWidth: pw,
-    maxHeight: ph,
-    minWidth: pw,
-    minHeight: ph,
-    maxShadowOpacity: 0.5,
-    showCover: true,
-    flippingTime: 1200,
-    useMouseEvents: false,
-    usePortrait: true,
-    mobileScrollSupport: true,
-    swipeDistance: 40,
-    drawShadow: true,
-    autoSize: false
-  });
-
-  pageFlip.loadFromHTML(document.querySelectorAll('.page'));
-
-  // Create dots
-  pageNames.forEach((name, i) => {
-    const dot = document.createElement('div');
-    dot.className = 'page-dot' + (i === 0 ? ' active' : '');
-    dot.title = name;
-    dot.addEventListener('click', () => goToPage(i));
-    dotsContainer.appendChild(dot);
-  });
-
-  // Listen for page flip events
-  pageFlip.on('flip', (e) => {
-    currentPage = e.data;
-    updateBookNav();
-  });
-
-  function updateBookNav() {
-    arrowLeft.classList.add('visible');
-    arrowLeft.disabled = false;
-    arrowRight.classList.add('visible');
-    arrowRight.disabled = currentPage === totalPages - 1;
-    document.querySelectorAll('.page-dot').forEach((d, i) => {
-      d.classList.toggle('active', i === currentPage);
-    });
-    pageLabel.textContent = `${pageNames[currentPage]} (${currentPage + 1}/${totalPages})`;
-  }
-
-  function goToPage(target) {
-    if (target === currentPage || target < 0 || target >= totalPages) return;
-    currentPage = target;
-    updateBookNav();
-    pageFlip.flip(target);
-  }
-
-  function nextPage() {
-    if (viewMode !== 'book' || currentPage >= totalPages - 1) return;
-    currentPage++;
-    updateBookNav();
-    pageFlip.flipNext('bottom');
-  }
-  function prevPage() {
-    if (viewMode !== 'book' || currentPage <= 0) return;
-    currentPage--;
-    updateBookNav();
-    pageFlip.flipPrev('bottom');
-  }
-
-  // Keyboard navigation
-  document.addEventListener('keydown', (e) => {
-    if (document.activeElement === document.getElementById('terminal-input')) {
-      if (e.key === 'Escape') { e.preventDefault(); showBook(); return; }
-      if (e.ctrlKey && e.key === 'ArrowRight') { e.preventDefault(); if (viewMode === 'cover') showBook(); else nextPage(); }
-      if (e.ctrlKey && e.key === 'ArrowLeft') { e.preventDefault(); if (viewMode === 'book' && currentPage === 0) showCover(); else prevPage(); }
-      return;
-    }
-    if (e.key === 'Escape') { e.preventDefault(); showCover(); return; }
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (viewMode === 'cover') showBook(); else nextPage();
-    }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (viewMode === 'book' && currentPage === 0) showCover(); else prevPage();
-    }
-  });
-
-  // Initial state: cover visible, right arrow visible
-  arrowRight.classList.add('visible');
-
-  /* ==============================
-     TERMINAL EMULATOR
-     ============================== */
-  const termOutput = document.getElementById('terminal-output');
-  const termInput = document.getElementById('terminal-input');
-  const cmdHistory = [];
-  let historyIdx = -1;
-
-  function print(text, cls = '') {
-    const line = document.createElement('div');
-    line.className = 'terminal-line' + (cls ? ' ' + cls : '');
-    line.innerHTML = text;
-    termOutput.appendChild(line);
-    termOutput.scrollTop = termOutput.scrollHeight;
-  }
-
-  function printImage(url, alt) {
-    const line = document.createElement('div');
-    line.className = 'terminal-line';
-    const img = document.createElement('img');
-    img.src = url;
-    img.alt = alt || '';
-    img.onload = () => { termOutput.scrollTop = termOutput.scrollHeight; };
-    line.appendChild(img);
-    termOutput.appendChild(line);
-    termOutput.scrollTop = termOutput.scrollHeight;
-  }
-
-  // Welcome message
-  function printWelcome() {
-    print('════════════════════════════════════', 'system');
-    print('HITCHHIKER\'S GUIDE TO SETH TIMMONS', 'system');
-    print('TERMINAL v42.0', 'system');
-    print('════════════════════════════════════', 'system');
-    print('');
-    print('Entry loaded: <span style="color:#66ffcc">TIMMONS, SETH</span>', 'highlight');
-    print('Classification: Surprisingly Competent');
-    print('');
-    print('This entity has been observed wearing an improbable');
-    print('number of hats, none of them actual hats.');
-    print('');
-    print('The Guide\'s research department has catalogued the following:');
-    print('  · Workflow & Integrations Engineer');
-    print('  · Application Analyst');
-    print('  · Full Stack Developer');
-    print('  · Database Administrator');
-    print('  · System & Server Administrator');
-    print('  · Front-End Engineer');
-    print('  · Web Developer');
-    print('');
-    print('Use command "<span style="color:#66ffcc">hats</span>" to pull up this list again.');
-    print('Try "<span style="color:#66ffcc">help</span>" to discover more about this specimen.', 'dim');
-    print('');
-  }
-
-  printWelcome();
-
-  // Command registry
-  const commandList = [
-    'help', 'hats', 'skills', 'workexp', 'projects', 'presentations',
-    'experiments', 'about', 'whoami', 'clear', 'history', '42',
-    'cat', 'dog', 'advice', 'fact', 'vogon', 'trivia', 'pokemon',
-    'space', 'iam', 'improbability', 'towel', 'babel', 'guide'
-  ];
-
-  const commands = {
-    help() {
-      print('');
-      print('The Guide is always here to help. Unlike most help desks.', 'system');
-      print('');
-      print('To view <span style="color:#66ffcc">Resume Information</span>, try:', 'highlight');
-      print('  · hats           — Vocational designations');
-      print('  · skills         — Equipment & capabilities catalog');
-      print('  · workexp        — Galactic travel log');
-      print('  · projects       — Sanctioned field reports');
-      print('  · presentations  — Recorded transmissions');
-      print('  · experiments    — Unsanctioned experiments');
-      print('');
-      print('If you are just <span style="color:#66ffcc">poking around for fun</span>, try:', 'highlight');
-      print('  · cat [size]     — Consult fauna archives');
-      print('  · dog [size]     — More fauna archives');
-      print('  · pokemon [name] — Earth fiction creatures');
-      print('  · advice         — Wisdom from the Guide');
-      print('  · fact           — Improbability readings');
-      print('  · vogon          — Vogon poetry recital');
-      print('  · trivia         — Test your galactic knowledge');
-      print('  · space          — Interstellar transmissions');
-      print('  · 42             — You know what this is');
-      print('  · towel          — Check towel status');
-      print('  · improbability  — Engage the Drive');
-      print('  · iam &lt;name&gt;     — Identify yourself');
-      print('  · babel &lt;text&gt;   — Babel Fish translation');
-      print('  · guide          — Open the Guide (page view)');
-      print('  · about          — About this terminal');
-      print('  · clear          — Clear screen');
-      print('');
-      print('Use Tab to auto-complete. Arrow keys for history.', 'dim');
-      print('');
-    },
-
-    hats() {
-      print('');
-      print('Vocational Designations (Hats) on file:', 'system');
-      print('  · Workflow & Integrations Engineer');
-      print('  · Application Analyst');
-      print('  · Computer Analyst');
-      print('  · Database Administrator');
-      print('  · Full Stack Developer');
-      print('  · Front-End Engineer');
-      print('  · Server Administrator');
-      print('  · System Administrator');
-      print('  · Systems Analyst');
-      print('  · Web Developer');
-      print('');
-      print('None of these are actual hats.', 'dim');
-      print('');
-    },
-
-    skills() {
-      print('');
-      print('Equipment & Capabilities Catalog:', 'system');
-      print('');
-      print('<span style="color:#ffaa00">Planetary Operating Systems</span>');
-      print('  Linux (Ubuntu, RHEL, Fedora) · Windows · Mac');
-      print('<span style="color:#ffaa00">Data Repositories</span>');
-      print('  MySQL · Oracle · PL/SQL');
-      print('<span style="color:#ffaa00">Incantation Languages</span>');
-      print('  Bash/Shell · Python · PHP · Ruby on Rails · Perl');
-      print('<span style="color:#ffaa00">Frontend Instrumentation</span>');
-      print('  HTML5 · CSS3 · JavaScript · jQuery · AJAX');
-      print('  Bootstrap · Foundation · Font Awesome');
-      print('<span style="color:#ffaa00">Integration Protocols</span>');
-      print('  REST APIs · GraphQL · Postman');
-      print('<span style="color:#ffaa00">AI & Context Engineering</span>');
-      print('  Claude / Anthropic API · Context Engineering');
-      print('  Claude Skills · Custom Commands · Integrations');
-      print('<span style="color:#ffaa00">Notable Galactic Systems</span>');
-      print('  Ellucian Colleague · Banner · Ethos Data Model');
-      print('  Terminal Four CMS · WordPress · Heroku');
-      print('<span style="color:#ffaa00">Testing & Accessibility</span>');
-      print('  Playwright · Web Accessibility Standards (WCAG)');
-      print('<span style="color:#ffaa00">DevOps & Version Control</span>');
-      print('  Git · GitHub');
-      print('<span style="color:#ffaa00">Recreational Tinkering</span>');
-      print('  Raspberry Pi · TensorFlow · Idle Games');
-      print('');
-    },
-
-    workexp() {
-      print('');
-      print('Galactic Travel Log:', 'system');
-      print('');
-      print('<span style="color:#66ffcc">DualEnroll</span> — Workflow & Integrations Engineer');
-      print('  Apr 2025 – Present · Remote', 'dim');
-      print('  EdTech sector. Workflows. Integrations. The usual.');
-      print('');
-      print('<span style="color:#66ffcc">Idaho State University</span> — 13 years 2 months');
-      print('');
-      print('  Application Analyst (2018–2025)');
-      print('  Led Ethos Integration initiative. Enterprise app');
-      print('  analysis. Log review. Root cause analysis. MySQL DBA.');
-      print('');
-      print('  Computer Analyst (2015–2018)');
-      print('  "All-Purpose UNIX, Programming and Database Guy."');
-      print('  Full stack LAMP apps. Fiber optic plant management.');
-      print('  Integrations: Jabber, Bluecats IPAM, Nagios XI.');
-      print('');
-      print('  Web Application Developer (2012–2015)');
-      print('  One-man full stack operation. Server design to');
-      print('  client-side programming. Everything in between.');
-      print('');
-    },
-
-    projects() {
-      print('');
-      print('Sanctioned Field Reports:', 'system');
-      print('  · Experience Campus Portal Implementation');
-      print('  · Asset Management Implementation');
-      print('  · Fiber Optic Plant Management System');
-      print('  · Database Driven Dynamic Mapping');
-      print('  · Billing Documentation & Interactive Walkthrough');
-      print('  · IP-Phone FAC Code Generator');
-      print('  · Mail Center Forward/Hold Manager');
-      print('  · ISU Online Directory & Jabber Directory');
-      print('  · Ticketing System Index & Search Portal');
-      print('  · Pagebuilder CSS Framework');
-      print('');
-      print('Use "experiments" for the unsanctioned stuff.', 'dim');
-      print('');
-    },
-
-    presentations() {
-      print('');
-      print('Recorded Transmissions:', 'system');
-      print('');
-      print('  WestNet June 2018 (NOAA | Boulder, Colorado)');
-      print('  · "FiDo — Implementation and Lessons Learned"');
-      print('');
-      print('  WestNet June 2015 (BSU | Boise, Idaho)');
-      print('  · "Managing Copper and Fiber Optic Plant Facilities');
-      print('     With Dynamic Web Applications"');
-      print('');
-    },
-
-    experiments() {
-      print('');
-      print('Unsanctioned Experiments:', 'system');
-      print('');
-      print('<span style="color:#66ffcc">This Guide</span>');
-      print('  You\'re looking at it. An interactive Hitchhiker\'s');
-      print('  Guide-themed portfolio. Seemed like a good idea.');
-      print('');
-      print('<span style="color:#66ffcc">The Game Master\'s Database</span>');
-      print('  A hand-built resource organizing D&D content from');
-      print('  across the web. For when you need to roll initiative.');
-      print('');
-      print('<span style="color:#66ffcc">Just Freestyle</span>');
-      print('  Uses open APIs to generate random words + freestyle');
-      print('  beats from YouTube. A place to practice rapping.');
-      print('  The Guide\'s cultural dept. is still classifying this.');
-      print('');
-    },
-
-    about() {
-      print('');
-      print('HITCHHIKER\'S GUIDE TO THE GALAXY — TERMINAL v42.0', 'system');
-      print('');
-      print('A fully interactive terminal interface to the Guide\'s');
-      print('database entry for Seth Timmons. Built with vanilla');
-      print('HTML, CSS, and JavaScript. No frameworks were harmed');
-      print('in the making of this terminal.');
-      print('');
-      print('Powered by free, open APIs. Because APIs are kind of');
-      print('this guy\'s whole thing.');
-      print('');
-      print('Source: github.com/timmseth/timmseth.github.io', 'dim');
-      print('');
-    },
-
-    whoami() {
-      print('');
-      print('Scanning retinal patterns...', 'dim');
-      print('Cross-referencing galactic citizen registry...', 'dim');
-      print('');
-      print('You are a visitor to the Guide. Your identity is');
-      print('"Mostly Unknown" but you seem like a good sort.');
-      print('');
-      print('Try "iam &lt;name&gt;" to register with the Guide.', 'dim');
-      print('');
-    },
-
-    clear() {
-      termOutput.innerHTML = '';
-    },
-
-    history() {
-      print('');
-      print('Command History:', 'system');
-      if (cmdHistory.length === 0) {
-        print('  No commands yet. The Guide is patient.', 'dim');
-      } else {
-        cmdHistory.forEach((cmd, i) => {
-          print(`  ${i + 1}. ${cmd}`);
-        });
-      }
-      print('');
-    },
-
-    '42'() {
-      print('');
-      print('The Answer to the Ultimate Question of Life,', 'system');
-      print('the Universe, and Everything.', 'system');
-      print('');
-      print('...is, of course, <span style="color:#66ffcc;font-size:1.2em;font-weight:bold">42</span>.');
-      print('');
-      print('The Guide reminds you that the real problem was');
-      print('always figuring out what the Question was.');
-      print('');
-      // Also fetch a fact about 42
-      fetchJSON('http://numbersapi.com/42?json').then(data => {
-        if (data && data.text) print('Fun fact: ' + data.text, 'dim');
-      }).catch(() => {});
-    },
-
-    towel() {
-      print('');
-      print('Checking towel status...', 'dim');
-      print('');
-      const statuses = [
-        'Your towel is exactly where you left it. Good.',
-        'Towel Status: SECURE. You are a hoopy frood.',
-        'Your towel is present and accounted for. The Guide approves.',
-        'Towel located. You clearly know where your towel is.',
-        'WARNING: Towel slightly damp. Otherwise nominal.',
-        'Towel Status: IMPECCABLE. You are the froopiest of hoopy froods.',
-      ];
-      print(statuses[Math.floor(Math.random() * statuses.length)], 'highlight');
-      print('');
-      print('"A towel is about the most massively useful thing', 'dim');
-      print(' an interstellar hitchhiker can have."', 'dim');
-      print('');
-    },
-
-    async cat(args) {
-      const size = parseInt(args) || 300;
-      print('');
-      print('Consulting the Guide\'s Earth fauna archives...', 'dim');
-      try {
-        const data = await fetchJSON('https://api.thecatapi.com/v1/images/search');
-        if (data && data[0] && data[0].url) {
-          print(`Category: Small Domestic Predator (${size}px viewport)`, 'system');
-          printImage(data[0].url, 'A cat from the Guide archives');
-        } else throw new Error();
-      } catch {
-        print('The fauna archives are temporarily unavailable.', 'error');
-        print('The Guide apologizes for the inconvenience.', 'dim');
-      }
-      print('');
-    },
-
-    async dog(args) {
-      const size = parseInt(args) || 300;
-      print('');
-      print('Accessing companion creature database...', 'dim');
-      try {
-        const data = await fetchJSON('https://dog.ceo/api/breeds/image/random');
-        if (data && data.message) {
-          print(`Category: Loyal Quadruped Companion (${size}px viewport)`, 'system');
-          printImage(data.message, 'A dog from the Guide archives');
-        } else throw new Error();
-      } catch {
-        print('The companion creature database is offline.', 'error');
-        print('The Guide apologizes for the inconvenience.', 'dim');
-      }
-      print('');
-    },
-
-    async advice() {
-      print('');
-      print('The Guide is formulating wisdom...', 'dim');
-      try {
-        const data = await fetchJSON('https://api.adviceslip.com/advice', { cache: 'no-store' });
-        if (data && data.slip) {
-          print('');
-          print('The Guide offers this wisdom:', 'system');
-          print(`"${data.slip.advice}"`, 'highlight');
-        } else throw new Error();
-      } catch {
-        print('The wisdom generators are recalibrating.', 'error');
-      }
-      print('');
-    },
-
-    async fact() {
-      print('');
-      print('Engaging Infinite Improbability sensors...', 'dim');
-      // Try multiple fact APIs with fallback to local facts
-      const localFacts = [
-        "A group of flamingos is called a 'flamboyance.'",
-        "Honey never spoils. Archaeologists have found 3,000-year-old honey in Egyptian tombs that was still edible.",
-        "Octopuses have three hearts, nine brains, and blue blood.",
-        "A day on Venus is longer than a year on Venus.",
-        "The inventor of the Pringles can is buried in one.",
-        "Bananas are berries, but strawberries aren't.",
-        "There are more possible iterations of a game of chess than there are atoms in the known universe.",
-        "The shortest war in history lasted 38 to 45 minutes, between Britain and Zanzibar in 1896.",
-        "A teaspoonful of neutron star would weigh about 6 billion tons.",
-        "The total weight of all ants on Earth is roughly equal to the total weight of all humans.",
-        "Oxford University is older than the Aztec Empire.",
-        "There are more stars in the universe than grains of sand on all of Earth's beaches.",
-        "Wombat poop is cube-shaped.",
-        "The speed of a computer mouse is measured in Mickeys.",
-        "The first computer bug was an actual bug — a moth found in a Harvard Mark II computer in 1947.",
-        "The average person walks the equivalent of five times around the world in their lifetime.",
-        "A cloud can weigh more than a million pounds.",
-        "The number 42 appears in the works of Lewis Carroll, who was a mathematician and friend of the number.",
-        "TCP packets can technically travel faster through space than through fiber optic cables on Earth.",
-        "The first 1 GB hard drive, announced in 1980, weighed about 550 pounds and cost $40,000.",
-      ];
-      let gotFact = false;
-      try {
-        const data = await fetchJSON('https://catfact.ninja/fact');
-        if (data && data.fact) {
-          print('');
-          print('Improbability Reading (Feline Division):', 'system');
-          print(data.fact, 'highlight');
-          gotFact = true;
-        }
-      } catch {}
-      if (!gotFact) {
-        print('');
-        print('Improbability Reading:', 'system');
-        print(localFacts[Math.floor(Math.random() * localFacts.length)], 'highlight');
-      }
-      print('');
-    },
-
-    async vogon() {
-      print('');
-      print('WARNING: Incoming Vogon poetry transmission...', 'system');
-      print('The Guide advises bracing for impact.', 'dim');
-      print('');
-      try {
-        const resp = await fetch('https://icanhazdadjoke.com/', {
-          headers: { 'Accept': 'application/json' }
-        });
-        const data = await resp.json();
-        if (data && data.joke) {
-          print('<em>*clears throat with a sound like a cat being bathed*</em>', 'dim');
-          print('');
-          print(`"${data.joke}"`, 'highlight');
-          print('');
-          print('— Prostetnic Vogon Jeltz (probably)', 'dim');
-          print('');
-          const reactions = [
-            'The audience politely loses consciousness.',
-            'Three hitchhikers have requested emergency evacuation.',
-            'Your towel is now slightly more damp from stress.',
-            'The Infinite Improbability Drive briefly engaged out of sympathy.',
-          ];
-          print(reactions[Math.floor(Math.random() * reactions.length)], 'dim');
-        } else throw new Error();
-      } catch {
-        print('The Vogon poetry transmitter has mercifully malfunctioned.', 'error');
-      }
-      print('');
-    },
-
-    async trivia() {
-      print('');
-      print('Accessing the Guide\'s quiz database...', 'dim');
-      try {
-        const data = await fetchJSON('https://opentdb.com/api.php?amount=1&type=multiple');
-        if (data && data.results && data.results[0]) {
-          const q = data.results[0];
-          const answers = [...q.incorrect_answers, q.correct_answer].sort(() => Math.random() - 0.5);
-          print('');
-          print(`Category: ${decodeHTML(q.category)}`, 'system');
-          print(`Difficulty: ${q.difficulty}`, 'dim');
-          print('');
-          print(decodeHTML(q.question), 'highlight');
-          print('');
-          answers.forEach((a, i) => {
-            const letter = String.fromCharCode(65 + i);
-            const isCorrect = a === q.correct_answer;
-            print(`  ${letter}. ${decodeHTML(a)}${isCorrect ? ' ✓' : ''}${isCorrect ? '' : ''}`);
-          });
-          print('');
-          print(`Answer: ${decodeHTML(q.correct_answer)}`, 'dim');
-        } else throw new Error();
-      } catch {
-        print('The quiz database has gone to lunch.', 'error');
-      }
-      print('');
-    },
-
-    async pokemon(args) {
-      const query = args ? args.toLowerCase().trim() : Math.floor(Math.random() * 898) + 1;
-      print('');
-      print('Scanning Earth fiction creature database...', 'dim');
-      try {
-        const data = await fetchJSON(`https://pokeapi.co/api/v2/pokemon/${query}`);
-        if (data && data.name) {
-          print('');
-          print(`Creature: ${data.name.toUpperCase()}`, 'system');
-          print(`ID: #${data.id} · Height: ${data.height/10}m · Weight: ${data.weight/10}kg`);
-          print(`Types: ${data.types.map(t => t.type.name).join(', ')}`);
-          print(`Abilities: ${data.abilities.map(a => a.ability.name).join(', ')}`);
-          if (data.sprites && data.sprites.front_default) {
-            printImage(data.sprites.front_default, data.name);
-          }
-          print('');
-          print('The Guide classifies this as "fictional but oddly detailed."', 'dim');
-        } else throw new Error();
-      } catch {
-        print(`Creature "${query}" not found in Earth fiction database.`, 'error');
-      }
-      print('');
-    },
-
-    async space() {
-      print('');
-      print('Intercepting transmission from Earth\'s primitive space agency...', 'dim');
-      try {
-        const data = await fetchJSON('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
-        if (data && data.title) {
-          print('');
-          print(`Transmission: ${data.title}`, 'system');
-          print(`Date: ${data.date}`, 'dim');
-          print('');
-          if (data.hdurl || data.url) {
-            printImage(data.hdurl || data.url, data.title);
-          }
-          if (data.explanation) {
-            // Truncate long explanations
-            const words = data.explanation.split(' ');
-            const short = words.slice(0, 40).join(' ') + (words.length > 40 ? '...' : '');
-            print(short);
-          }
-          print('');
-          print('The Guide notes that Earth\'s space program is', 'dim');
-          print('"charmingly enthusiastic for a Level 2 civilization."', 'dim');
-        } else throw new Error();
-      } catch {
-        print('Space agency transmission lost. They\'re probably fine.', 'error');
-      }
-      print('');
-    },
-
-    iam(args) {
-      const name = args ? args.trim() : '';
-      print('');
-      if (!name) {
-        print('Usage: iam &lt;name&gt;', 'dim');
-        print('');
-        return;
-      }
-      print(`Cross-referencing galactic citizen registry...`, 'dim');
-      print('');
-      const greetings = [
-        `Welcome, ${name}. The Guide has updated your visitor badge.`,
-        `Ah, ${name}! The Guide was expecting someone taller.`,
-        `${name}, registered. Please keep your towel nearby at all times.`,
-        `Greetings, ${name}. Your improbability factor is within acceptable limits.`,
-        `Welcome aboard, ${name}. Try not to get vaporized.`,
-        `${name}! The Guide rates your name as "pleasantly pronounceable."`,
-        `Noted: ${name}. The Guide's hospitality subroutine is now active.`,
-      ];
-      print(greetings[Math.floor(Math.random() * greetings.length)], 'highlight');
-      print('');
-    },
-
-    async improbability() {
-      print('');
-      print('Engaging Infinite Improbability Drive...', 'system');
-      print('');
-      // Randomly choose an API to call
-      const options = ['advice', 'fact', 'vogon', 'trivia'];
-      const choice = options[Math.floor(Math.random() * options.length)];
-      print(`Drive output: ${choice.toUpperCase()} anomaly detected.`, 'dim');
-      print('');
-      await commands[choice]('');
-    },
-
-    babel(args) {
-      const text = args ? args.trim() : '';
-      print('');
-      if (!text) {
-        print('Usage: babel &lt;text&gt;', 'dim');
-        print('Runs text through the Babel Fish for translation.', 'dim');
-        print('');
-        return;
-      }
-      print('Inserting Babel Fish into ear canal...', 'dim');
-      print('(This is the most unpleasant sensation.)', 'dim');
-      print('');
-
-      // Fun transformations
-      const transforms = [
-        { name: 'Vogon Bureaucratic', fn: t => t.split(' ').map(w => w.toUpperCase()).join(' ') + '. FORM 27B/6 REQUIRED.' },
-        { name: 'Reverse Babel', fn: t => t.split('').reverse().join('') },
-        { name: 'Magrathean Academic', fn: t => 'In the grand cosmic perspective, ' + t.toLowerCase() + ', which is to say, rather insignificant really.' },
-        { name: 'Zaphod Breeblebrox', fn: t => 'Hey, ' + t + '! Isn\'t that just zarking amazing? I\'m so great.' },
-        { name: 'Marvin the Paranoid Android', fn: t => 'I could translate "' + t + '" but what\'s the point? We\'re all going to die anyway. Brain the size of a planet and they ask me to translate things.' },
-      ];
-      const transform = transforms[Math.floor(Math.random() * transforms.length)];
-      print(`Translation (${transform.name}):`, 'system');
-      print(transform.fn(text), 'highlight');
-      print('');
-    },
-
-    guide(args) {
-      print('');
-      print('Opening the Guide...', 'system');
-      print('Use the arrow buttons or Escape to return here.', 'dim');
-      print('');
-      setTimeout(() => showBook(), 500);
-    }
-  };
-
-  /* ==============================
-     COMMAND EXECUTION
-     ============================== */
-  function executeCommand(input) {
-    const trimmed = input.trim();
-    if (!trimmed) return;
-
-    cmdHistory.push(trimmed);
-    historyIdx = cmdHistory.length;
-
-    print(`hitchhiker@guide:~$ ${escapeHTML(trimmed)}`, 'input-echo');
-
-    const parts = trimmed.split(/\s+/);
-    const cmd = parts[0].toLowerCase();
-    const args = parts.slice(1).join(' ');
-
-    if (commands[cmd]) {
-      commands[cmd](args);
-    } else {
-      print('');
-      print(`The Guide has no entry for '${escapeHTML(cmd)}'.`, 'error');
-      print('The editors suggest trying \'help\'.', 'dim');
-      print('');
-    }
-  }
-
-  // Terminal input handling
-  termInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      executeCommand(termInput.value);
-      termInput.value = '';
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (cmdHistory.length > 0) {
-        historyIdx = Math.max(0, historyIdx - 1);
-        termInput.value = cmdHistory[historyIdx] || '';
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      historyIdx = Math.min(cmdHistory.length, historyIdx + 1);
-      termInput.value = cmdHistory[historyIdx] || '';
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      const partial = termInput.value.trim().toLowerCase();
-      if (partial) {
-        const matches = commandList.filter(c => c.startsWith(partial));
-        if (matches.length === 1) {
-          termInput.value = matches[0] + ' ';
-        } else if (matches.length > 1) {
-          print(`hitchhiker@guide:~$ ${escapeHTML(termInput.value)}`, 'input-echo');
-          print(matches.join('  '), 'dim');
-        }
-      }
-    }
-  });
-
-  // Click terminal to focus input
-  document.getElementById('cover').addEventListener('click', (e) => {
-    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.closest('#gui-toggle') && !e.target.closest('#gui-panel')) {
-      termInput.focus();
-    }
-  });
-
-  /* ==============================
-     GUI PANEL — Toggle + Typewriter Command Execution
-     ============================== */
-  const guiToggle = document.getElementById('gui-toggle');
-  const guiPanel = document.getElementById('gui-panel');
-  let guiOpen = false;
-  let isTyping = false;
-
-  guiToggle.addEventListener('click', () => {
-    guiOpen = !guiOpen;
-    guiToggle.classList.toggle('open', guiOpen);
-    guiPanel.classList.toggle('open', guiOpen);
-    guiToggle.querySelector('span:last-child').textContent = guiOpen ? 'DISABLE GUI' : 'ENABLE GUI';
-  });
-
-  // Typewriter effect: type command letter by letter, then execute
-  function typeAndExecute(cmd, btn) {
-    if (isTyping) return;
-    isTyping = true;
-    if (btn) btn.classList.add('typing');
-    termInput.value = '';
-    termInput.focus();
-
-    let i = 0;
-    const speed = 35 + Math.random() * 20; // ms per character, slight variation
-
-    function typeNext() {
-      if (i < cmd.length) {
-        termInput.value += cmd[i];
-        i++;
-        setTimeout(typeNext, speed + (Math.random() - 0.5) * 25);
-      } else {
-        // Brief pause then execute
-        setTimeout(() => {
-          executeCommand(termInput.value);
-          termInput.value = '';
-          isTyping = false;
-          if (btn) btn.classList.remove('typing');
-        }, 150);
-      }
-    }
-    typeNext();
-  }
-
-  // Attach to all GUI buttons
-  document.querySelectorAll('.gui-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const cmd = btn.dataset.cmd;
-      if (cmd) typeAndExecute(cmd, btn);
-    });
-  });
-
-  /* ==============================
-     UTILITY FUNCTIONS
-     ============================== */
-  async function fetchJSON(url, options = {}) {
-    const resp = await fetch(url, options);
-    return resp.json();
-  }
-
-  function escapeHTML(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function decodeHTML(html) {
-    const txt = document.createElement('textarea');
-    txt.innerHTML = html;
-    return txt.value;
-  }
-
-  /* ==============================
-     AVATAR REVEAL — click/tap "Artist's" to show real face
-     ============================== */
-  const avatarHint = document.querySelector('.avatar-hint');
-  if (avatarHint) {
-    let avatarTimeout = null;
-    avatarHint.addEventListener('click', (e) => {
-      e.preventDefault();
-      const realImg = document.querySelector('.avatar-real');
-      if (!realImg) return;
-      clearTimeout(avatarTimeout);
-      realImg.classList.add('revealed');
-      // Show for 3 seconds, then fade out over 2s (handled by CSS transition)
-      avatarTimeout = setTimeout(() => {
-        realImg.classList.remove('revealed');
-      }, 3000);
-    });
-  }
-
-})();
+document.getElementById('yr').textContent = new Date().getFullYear();
 </script>
 </body>
 </html>
